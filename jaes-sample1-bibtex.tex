@@ -231,7 +231,7 @@ Similar to Sec. \ref{sec:matrixFormOrig}, system \eqref{eq:splitFDS} can be writ
 \end{equation}
 where $\MoneD = M^n + M_w^n$.
 The update equation of the 1D wave equation including the dynamic grid can then be written in matrix form as
-\begin{equation}
+\begin{equation}\label{eq:1DwaveDynMatrix}
     \uStack^{n+1} = (2\I_\MoneD + (c^n)^2k^2\DDxx)\uStack^n - \uStack^{n-1} 
 \end{equation}
 where $\DDxx$ is an adapted version of $\Dxx$ in Eq. \eqref{eq:dxxMat} to include the quadratic interpolation presented in Eq. \eqref{eq:connectionInterpol}:
@@ -278,6 +278,7 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
     \u^{n-1} &= [u_1^{n-1}, \hdots, u_{M^{n-1}-1}^{n-1}]^T,
     \end{aligned} \quad \text{if } N^n < N^{n-1}.
 \end{equation}
+The limit on changing grid configurations is the addition / removal of one grid point per sample. Practically, this limit needs to be much lower to keep the system well-behaved. In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$, no artifacts 
 
 \subsection{State Correction}\label{sec:stateCorrection}
 At the moment that a point is removed, and thus $x_{u_{M^n}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $u_M^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artifacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
@@ -337,7 +338,7 @@ where $\dxxxx = \dxx\dxx$. Note that the stability condition is now
     h \geq \sqrt{\frac{c^2k^2 + \sqrt{c^4k^4+16\kappa^2k^2}}{2}}
 \end{equation} 
 Expanding $\dtt$, and writing this scheme in matrix form yields
-\begin{equation}
+\begin{equation}\label{eq:stiffStringDynMatrix}
     \!\!\!\!\!\!\q^{n+1} = \left(2\I_{N-1} + c^2 k^2 \Dxx - \kappa^2 k^2 \Dxxxx\right)\q^{n} - \q^{n-1},
 \end{equation}
 where (for simply supported boundary conditions)
@@ -552,7 +553,7 @@ Using same-sized identity matrix $\I = \I_{N_x+N_y-2}$ and the stacked state vec
 \end{equation}
 \subsubsection{Applying the Dynamic Grid}
 Using the state vector in Eq. \eqref{eq:stacked2D} one can write the update equation of the 2D wave equation including the dynamic grid in matrix form as
-\begin{equation}
+\begin{equation}\label{eq:2DwaveDynMatrix}
     \uStack^{n+1} = \left(2\I_\MtwoD + (c^n)^2k^2\DDdelta\right)\uStack^n -\uStack^{n-1}
 \end{equation}
 with $\MtwoD \times \MtwoD$ matrix
@@ -584,7 +585,7 @@ where $\I = \I_{N_x + N_y - 2}$ and for simply supported boundary conditions
 with $\DDeltamat$ as defined in Eq. \eqref{eq:kroneckerSum}.
 
 The dynamic grid can be applied to this system similar to before as
-\begin{equation}
+\begin{equation}\label{eq:thinPlateDynMatrix}
     \uStack^{n+1} = \left(2\I_\MtwoD - (\kappa^n)^2 k^2 \DDDeltaDelta\right)\uStack^n - \uStack^{n-1}
 \end{equation}
 where for simply supported boundary conditions
@@ -599,16 +600,18 @@ To evaluate the dynamic grid..
 \subsection{Stability Analysis}
 Notes:
 
-\SWcomment[I can show numerically that the eigenvalues of all update equations in one-step form lie on the unit circle for all values of $\alpha^n$ (given that the stability condition is satisfied), but I can't algebraically prove this. I do know that thi shows stability as well as the absence of damping in the system (right?)]
+\SWcomment[I can show numerically that for all dynamic grid update equations (Eqs. \eqref{eq:1DwaveDynMatrix}, \eqref{eq:stiffStringDynMatrix}, \eqref{eq:2DwaveDynMatrix} and \eqref{eq:thinPlateDynMatrix}) written in one-step form, the eigenvalues of matrix $\BB$ (see eq. \eqref{eq:modalAnalysis}) are located on the unit circle for all values of $\alpha^n$ (given that the stability condition is satisfied). However, I can't algebraically prove this. I do know that this shows stability as well as the absence of damping in the system (right?). More importantly, is should I mention this fact somewhere?]
+
+\SWcomment[
+Alternatively, I can numerically show that the determinant of $\BB$ is 1, for any value of $\alpha^n$. Hope that that helps to prove something...]
+
 \subsection{Modal Frequencies}
 
-If $\alpha^n$ = 0, the system yields identical behaviour to the original. 
-
-One can retrieve the modal frequencies of the implementation of the dynamic grid by performing a modal analysis of the update equation in matrix form. The $p$\th frequency can be calculated as
+One can retrieve the modal frequencies of the implementation of the dynamic grid by performing a modal analysis of the update equation in matrix form. For reference, these are Eqs. \eqref{eq:1DwaveDynMatrix}, \eqref{eq:stiffStringDynMatrix}, \eqref{eq:2DwaveDynMatrix} and \eqref{eq:thinPlateDynMatrix}. The $p$\th frequency can be calculated as
 \begin{equation}\label{eq:modalAnalysis}
-    f_p^n = \frac{1}{2 \pi k}\cos^{-1}\left(\frac{1}{2}\text{eig}_p(\B^n)\right),
+    f_p^n = \frac{1}{2 \pi k}\cos^{-1}\left(\frac{1}{2}\text{eig}_p(\BB)\right),
 \end{equation}
-where $\B^n$ is the matrix multiplied onto $\uStack^n$ in each respective update equation and $\text{eig}_p(\cdot)$ denotes the ``$p$\th eigenvalue of".
+where $\BB$ is the matrix multiplied onto $\uStack^n$ in each respective update equation and $\text{eig}_p(\cdot)$ denotes the ``$p$\th eigenvalue of".
 
 To determine how accurate the frequency content is, the frequencies obtained in Eq. \eqref{eq:modalAnalysis} can be compared to the modal frequencies that the implementation is expected to have. \SWcomment[not sure if I want to include the following, but just so you know how I did the analysis :) $\rightarrow$]
 The expected modal frequencies of a FD scheme as a function of the wave number can be obtained by performing a von Neumann analysis on the discrete scheme. The wave number as a function of physical parameters can then be obtained through a combination of dispersion analysis and modal analysis of the continuous PDE. 
@@ -620,11 +623,13 @@ The expected modal frequencies of a FD scheme as a function of the wave number c
 
 In the following, the difference between the expected modal frequencies and those exhibited by the implementation will be expressed in cents.
 
-In all cases, the following apply:
+In all cases, the following facts apply:
 \begin{itemize}
+    \item If $\alpha^n$ = 0, the system yields identical behaviour to the original. 
+    \item The number of modes is always equal to the number of moving grid points in the system.
     \item The higher the modal number, the higher its frequency deviation.
-    \item The higher the number of intervals, the lower the value of the deviations.
-    \item The highest deviation amount happens for $\alpha^n < 0.25$
+    \item The higher the number of grid points in the simulation, the less frequency deviation occurs.
+    \item The highest deviation amount for one value of $N^n$ happens for $\alpha^n \lesssim 0.25$.
 \end{itemize}
 
 % One can retrieve the modal frequencies of a FD scheme by performing a modal analysis on its update equation in matrix form. These can be compared to the expected modal frequencies one can obtain from the continuous 
@@ -665,6 +670,9 @@ In all cases, the following apply:
 \subsubsection{Stiff String}
 
 Cent deviation:
+
+\subsection{State Correction}
+In the 1D case, the state correction presented in Sec. \ref{sec:stateCorrection} does not affect the modal content 
 \section{DISCUSSION}\label{sec:discussion}
 Damping can easily be added to the systems presented in Sections \ref{sec:dynamicGrid} and \ref{sec:2D}.
 
@@ -684,8 +692,8 @@ Real-time implementation and control, such that a player can `mould' their instr
 \section{ACKNOWLEDGMENTS}
 This  work  has  been  funded  in  part  by  the European Art-Science-Technology Network for Digital Creativity (EASTN-DC). Thanks to the DAFx20in21 committee for \SWcomment[supporting this publication to be open access].
 
-\bibliography{jaes.bib}
-\bibliographystyle{jaes.bst}
+% \bibliography{jaes.bib}
+% \bibliographystyle{jaes.bst}
 
 \appendix
 \section*{APPENDIX: KRONECKER SUM}\label{app:kronecker}
