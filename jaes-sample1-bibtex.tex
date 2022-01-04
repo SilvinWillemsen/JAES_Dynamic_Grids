@@ -55,33 +55,27 @@ artefacts when changing between grid configurations, though this needs to be con
 %Head 1
 \section{INTRODUCTION}\label{sec:introduction}
 
+The functioning of nearly any musical instrument can be subdivided into an exciter and resonator components \cite{mcintyre1983oscillations, Borin1989}. Examples of resonators are the stringed instrument body and the brass instrument bore, which are excited by the bow and the lips of the player respectively. The resonator is often assumed to be linear (exceptions being the nonlinear string \cite{Carrier1945}, or shock waves in bores \cite{Hirschberg1996, Msallam2000, Vergez2000}) and time-invariant , whereas the excitation is usually modeled as a lumped nonlinearity and can be controlled by the performer over time. However, real-world cases where the defining parameters of the resonator are time-varying exist.
+A notable example is the trombone, where the length of the acoustic tube is changed during performance. Furthermore, membrane tension in timpani or ``hourglass drums"\footnote{Ayan Bisi Adeleke - Master talking drummer - drum talks: \url{https://youtu.be/B4oQJZ2TEVI?t=9}} are varied. % and thus face the same difficulties when modelled using FDTD methods. 
+See \cite[Sec. 12.4]{Willemsen2021Thesis} for more examples. 
 
+Over the past few decades, much work has been done on emulating real-world musical instruments, specifically resonator components, through various physical modelling techniques. Many techniques exist and a detailed summary can be found here \cite{valimaki2005discrete}. Finite-difference time-domain (FDTD) methods, while not the most efficient, are flexible and generalisable in terms of the systems one can model \cite{Bilbao2009}.
 
-The functioning of nearly any musical instrument can be subdivided into an exciter and resonator components \cite{mcintyre1983oscillations, Borin1989}. Examples of resonators are the stringed instrument body and the brass instrument bore, which are excited by the bow and the lips of the player respectively. The resonator is often assumed to be linear and time-invariant (exceptions being the nonlinear string \cite{Carrier1945}, or shock waves in bores \cite{Hirschberg1996, Msallam2000, Vergez2000}), whereas the excitation is usually modeled as a lumped nonlinearity and can be controlled by the performer over time. Over the past few decades, much work has been done on emulating real-world musical instruments, specifically resonator components, through various physical modelling techniques. Many techniques exist and a detailed summary can be found here \cite{valimaki2005discrete}. Finite-difference time-domain (FDTD) methods, while not the most efficient, are flexible and generalisable in terms of the systems one can model \cite{Bilbao2009}.
+Although FDTD methods have been extensively used for sound synthesis purposes, relatively little work has been done on varying the defining parameters of the resonator during performance. First of all, difficulties arise when working with time-varying systems, both in the underlying continuous equations, as well as stability issues arising in their numerical implementation. Secondly, most physical resonators (excluding the exceptions mentioned before) are described by a fixed set of parameters. In other words, properties such as material density and geometry of the instrument are unchangeable in the real world, and will thus remain this way in simulation.
 
-Although FDTD methods have been extensively used for sound synthesis purposes, relatively little work has been done on varying the defining parameters of the resonator during performance. First of all, this is due to the difficulties that arise when working with time-varying systems, both in the underlying continuous equations, as well as stability issues arising in their numerical implementation. Secondly, most physical systems are described by a fixed set of parameters regarding the resonator. In other words, properties such as material density and geometry of the instrument are unchangeable in the real world \SBcomment[OK, but then you give the real-world example of the trombone below. i think this paragraph could be shortened down to a single sentence perhaps, at the end of the last paragraph.], and will thus remain this way in simulation.
+In the authors' view, one of the greatest  benefits of virtual musical instrument models is to exploit the virtual nature of the instrument and go beyond what is physically possible. Instrument properties that are normally fixed could be made time-varying to create sounds impossible in the real world and potentially extend the range of expression for the musician. Already existing work on time-varying parameters in physical models using modal synthesis \cite{morrison1993mosaic} are shown in \cite{Mehes2016, Willemsen2017}, digital waveguides \cite{Smith1992} are shown in \cite{Michon2014, serafin2005virtual}, and mass-spring systems are shown in \cite{leonard2013virtual}. An acoustic tube with time-varying length implemented using FDTD methods is presented in \cite{Hofmann2019} and uses full-grid interpolation to update the system states whenever the length is changed.
 
-However,  real-world cases where the defining parameters of the resonator are time-varying exist.
-A notable example is the trombone, where the length of the acoustic tube is changed during performance. Furthermore, membrane tension in timpani or ``hourglass drums"\footnote{Ayan Bisi Adeleke - Master talking drummer - drum talks: \url{https://youtu.be/B4oQJZ2TEVI?t=9}} are varied and thus face the same difficulties when modelled using FDTD methods. See \cite[Sec. 12.4]{Willemsen2021Thesis} for more examples. An acoustic tube with time-varying length implemented using FDTD methods is presented in \cite{Hofmann2019} and uses full-grid interpolation to update the system states whenever the length is changed. Grid points are added and removed at the radiating end \SBcomment[OK, the general development here is getting a little jumbled. This paragraph is about models I think, not simulation techniques. Better to wait on talking about simulation techniques until a later paragraph. I'd suggest merging your discussion about time varying musical instrument models (trombone and timpani) into the previous paragraph, and then starting fresh in the next paragraph to talk about discrete time simulation. ].
-
-In the authors' view, one of the greatest  benefits of virtual musical instrument models is to exploit the virtual nature of the instrument and go beyond what is physically possible. Instrument properties that are normally fixed could be made time-varying to create sounds impossible in the real world and potentially extend the range of expression for the musician. Already existing work on time-varying parameters in physical models using modal synthesis \cite{morrison1993mosaic} are shown in \cite{Mehes2016, Willemsen2017}, digital waveguides \cite{Smith1992} are shown in \cite{Michon2014, serafin2005virtual}, and mass-spring systems are shown in \cite{leonard2013virtual}.
-
-% Apart from ``unphysical" manipulations of musical instruments, 
-
-This paper presents the dynamic grid, a method to allow for time-varying parameters in real-time simulations of musical instruments based on FDTD methods. The current work generalises the method presented in \cite{Willemsen2021a} where it is applied to the 1D wave equation, and extends it to more complex systems, such as the stiff string, and 2D systems, including the 2D wave equation and the thin plate. The method appears in part in \cite[Ch. 12]{Willemsen2021Thesis} and has been used to model the trombone, including time-varying length in \cite{Willemsen2021b}. 
-
-At its current stage, physical accuracy and stability conditions are not the main focus of the method. Instead, efficiency and applicability to already existing models are more important for this contribution \SBcomment[OK, this is a little dangerous territory to get into here in the intro. Better would be to come back to this point in the conclusions, I think. ]. Changes in parameter values are therefore assumed to be sub-audio rate (control rate) such that they can be applied to commonly used FD schemes.
+This paper presents the dynamic grid, a method to allow for time-varying parameters in real-time simulations of musical instruments based on FDTD methods. The current work generalises the method presented in \cite{Willemsen2021a} where it is applied to the 1D wave equation, and extends it to more complex systems, such as the stiff string, and 2D systems, including the 2D wave equation and the thin plate. Changes in parameter values are assumed to be sub-audio rate (control rate) such that they can be applied to commonly used FD schemes.
+The method appears in part in \cite[Ch. 12]{Willemsen2021Thesis} and has been used to model the trombone, including time-varying length in \cite{Willemsen2021b}. Grid points are added along the grid as opposed to \cite{Hofmann2019}, where this only happens at the radiating end. 
 
 This paper is structured as follows: Sec. \ref{sec:continuous} presents the 1D wave equation as a starting point and Sec. \ref{sec:numericalMethods} introduces FDTD methods and discusses stability and simulation quality. Sec. \ref{sec:dynamicGrid} introduces the dynamic grid and its application to the 1D wave equation and the stiff string, and Sec. \ref{sec:2D} extends the method to 2D systems. Sec. \ref{sec:analysis} presents the analysis of the method and its results and a discussion and concluding remarks appear in Sec. \ref{sec:discussion} and Sec. \ref{sec:conclusion} respectively.
 
-\section{CONTINUOUS SYSTEMS}\label{sec:continuous}
-\SBcomment[I think you might need a little reorganisation of the sections...this one is called "Continuous Systems" but deals only with the 1D wave equation...and then later we come back to 2D continuous systems! Might be better to arrange this paper by dimension instead. As in, consolidate Sections 1 and 2 into a "1D Wave Equation" section, including both the continuous and disrete cases,]
-
-A useful starting point for illustrating the dynamic grid is the 1D wave equation, with state variable $q(x, t)$ defined over space $x \in [0, L]$, for some length $L$ in m, and time $t \geq 0$ in s:
+\section{1D SYSTEMS}\label{sec:continuous}
+A useful starting point for illustrating the dynamic grid is the 1D wave equation, with state variable $q(x, t)$ defined over space $x \in [0, L]$, for some length $L$ (in m), and time $t \geq 0$ (in s):
 \begin{equation}\label{eq:1DwaveCont}
     \ptt q = c^2 \pxx q,
 \end{equation}
-Here, $c$  is the wave speed, in m/s, and derivatives with respect to $t$ and $x$ are denoted by $\pt$ and $\px$ respectively. In the above, $q$ can be interpreted as the transverse displacement of an ideal string, or the acoustic pressure in a cylindrical tube. Two possible choices of boundary condition are as follows:
+Here, $c$  is the wave speed (in m/s), and derivatives with respect to $t$ and $x$ are denoted by $\pt$ and $\px$ respectively. In the above, $q$ can be interpreted as the transverse displacement of an ideal string, or the acoustic pressure in a cylindrical tube. Two possible choices of boundary condition are as follows:
 \begin{subequations}\label{eq:contBoundaryConditions}
 \begin{alignat}{2}
     q(0, t) &= q(L, t) = 0 &&\text{(Dirichlet)},\label{eq:contDirichlet}\\
@@ -90,7 +84,7 @@ Here, $c$  is the wave speed, in m/s, and derivatives with respect to $t$ and $x
 \end{subequations}
 and can be interpreted as `fixed' and `free' boundaries respectively for the ideal string, or `open' and `closed' boundaries respectively for the acoustic tube.
 
-\section{NUMERICAL METHODS}\label{sec:numericalMethods}
+\subsection{Numerical Methods}\label{sec:numericalMethods}
 To discretise Eq. \eqref{eq:1DwaveCont} using FDTD methods, a spatio-temporal grid needs to be defined first. 
 Time $t\geq 0$ can be discretised as $t = nk$ with temporal index $n = 0, 1, 2, \hdots$ and time-step $k = 1/f_\text{s}$ (in s) with sample rate $f_\text{s}$ (in Hz). Space $x = [0, L]$ is subdivided into $N$ equal intervals of length $h$ (in m) -- also called the grid spacing -- according to $x = lh$ with spatial index $l\in \{0, \hdots, N\}$. 
 
@@ -113,7 +107,7 @@ which can be expanded to the following update equation
 where here, 
 \begin{equation}\label{eq:courant}
     \lambda = \frac{c k}{h}
-\end{equation} is referred to as the Courant number\SBcomment[reference], and is related to stability and simulation quality as will be described in Sec. \ref{sec:quality}.
+\end{equation} is referred to as the Courant number \cite{Courant1928}, and is related to stability and simulation quality as will be described in Sec. \ref{sec:quality}.
 
 From Eq. \eqref{eq:1DwaveUpdate} one can observe that at the end points of the system ($l=0$, and $l=N$) grid points outside the defined domain are needed, i.e., $q_{-1}^n$ and $q_{N+1}^n$. These are referred to as \textit{virtual grid points} and can be defined \SBcomment[OK, this needs to be slightly adjusted, as the Dirichlet condition doesn't really define the ghost points, but just eliminates the need for them.] by discretising the boundary conditions in Eq. \eqref{eq:contBoundaryConditions} as follows:
 \begin{subequations}\label{eq:discBoundaryConditions}
@@ -122,7 +116,7 @@ From Eq. \eqref{eq:1DwaveUpdate} one can observe that at the end points of the s
     \dxd q_0^n &= \dxd q_N^n = 0 \ \ &&\text{(Neumann)}.\label{eq:discNeumann}
 \end{alignat}
 \end{subequations}
-If Dirichlet boundary conditions are used, the range of calculation simply becomes $l=\{1, \hdots, N-1\}$. In this work, only Dirichlet boundaries will be considered. \SBcomment[Hey, if you're only using Dirichlet, better to remove the Neumann conditions completely here...otherwise it just gets confusing!]
+If Dirichlet boundary conditions are used, the range of calculation simply becomes $l=\{1, \hdots, N-1\}$. In this work, only Dirichlet boundaries will be considered. \SBcomment[Hey, if you're only using Dirichlet, better to remove the Neumann conditions completely here...otherwise it just gets confusing!] \SWcomment[So also excluding it from the continuous section?]\SBcomment[Yes...you could mention it in text though.]
 
 \subsection{Matrix Form}\label{sec:matrixFormOrig}
 Both for compact implementation  as well as for applying the dynamic grid to more complex systems, it is useful to write the update equation in Eq. \eqref{eq:1DwaveUpdate} in matrix form.
@@ -148,12 +142,12 @@ and same-sized identity matrix $\I_{N-1}$. \SBcomment[Can be slightly cleaner to
 
 
 \subsection{Stability and Simulation Quality}\label{sec:quality}
-In order to ensure stability for the scheme in Eq. \eqref{eq:1dWaveDisc} the Courant number in Eq. \eqref{eq:courant} needs to satisfy the CFL condition:
+In order to ensure stability for the scheme in Eq. \eqref{eq:1dWaveDisc} the Courant number in Eq. \eqref{eq:courant} needs to satisfy the CFL condition \cite{Courant1928}:
 \begin{equation}\label{eq:CFL}
     \lambda \leq 1.
 \end{equation}
 %
-If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an exact solution to Eq. \eqref{eq:1DwaveCont}. In the case that $\lambda < 1$, numerical error is introduced, which shows in a decrease in bandwidth of the simulation and dispersive effects. \SBcomment[maybe say here that this is what you mean by "quality" as otherwise we're not sure...]
+If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an exact solution to Eq. \eqref{eq:1DwaveCont}. In the case that $\lambda < 1$, numerical error is introduced, which decreases the quality of the simulation shown by a decrease in bandwidth and dispersive effects.
 
 Usually, Eq. \eqref{eq:CFL} is rewritten in terms of the grid spacing such that
 \begin{equation}\label{eq:stabilityCond}
@@ -163,32 +157,30 @@ which is implemented as
 \begin{equation}\label{eq:orderOfCalc}
     h:=ck, \quad N = \floor[\frac{L}{h}],\quad h = \frac{L}{N},\qaq \lambda = \frac{ck}{h}.
 \end{equation}
-Here, $\floor[\cdot]$ denotes the flooring operation which is necessary to ensure an integer number of intervals. Equation \eqref{eq:orderOfCalc} shows that $h$ needs to be recalculated based on integer $N$ after which $\lambda$ is calculated from this. If $L/h$ is not an integer, this means that $\lambda < 1$ yielding numerical dispersion \SBcomment[but usually small if $\lambda$ is near 1!]. 
+Here, $\floor[\cdot]$ denotes the flooring operation which is necessary to ensure an integer number of intervals. Equation \eqref{eq:orderOfCalc} shows that $h$ needs to be recalculated based on integer $N$ after which $\lambda$ is calculated from this. If $L/h$ is not an integer, this means that $\lambda < 1$, yielding numerical dispersion (though usually small if $\lambda$ is near 1).
 
 \section{THE DYNAMIC GRID}\label{sec:dynamicGrid}
 As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. 
-One can observe from the 1D wave equation that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. Several computational issues emerge. 
+Leaving sample rate $f_\text{s}$, and thus $k$ fixed, one can observe from the 1D wave equation that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. Several computational issues emerge. 
 
-\SBcomment[OK, this maybe needs more explanation. As in, you should say that you are holding $k$ and $L$ fixed. Also, you're working implicitly from the assumption that $\lambda = 1$ to start with. But you don't need to do this...might be better to introduce $\lambda$ through an initial $h = ck/\lambda$.] First, a change in the wave speed $c$ will cause a change in $\lambda$, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
+\SBcomment[OK, this maybe needs more explanation. As in, you should say that you are holding $k$ and $L$ fixed.] \SWcomment[Added static $k$ above. $L$ can still change as will be done in the 2D case.] \SBcomment[Also, you're working implicitly from the assumption that $\lambda = 1$ to start with. But you don't need to do this...might be better to introduce $\lambda$ through an initial $h = ck/\lambda$.] \SWcomment[Hmm.. not sure how to write this. Should I say that we can now set $\lambda$ freely (not calculating it from existing parameters) as long as it satisfies Eq. \eqref{eq:CFL}?] First, a change in the wave speed $c$ will cause a change in $\lambda$, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
 
 In this work, a \textit{fractional} number of intervals $\Nfrac = L / h$ is proposed such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ will potentially allow for smooth transitions between grid configurations. 
 
 \subsection{Proposed Method}
 In the following, the location of a grid point $q_l$ at time index $n$ will be written as $x_{q_l}^n$ (in m from the left boundary). Moreover, the following time-varying parameters are indicated with a superscript $n$: $L^n$, $c^n$, $h^n$, $\Nfrac^n$ and $N^n$. % and $f_0^n
-As a starting point, the original system $\qln$, with $l=\{0, \hdots, N^n\}$ is split into two subsystems: $\ulun$ with $l_u=\{0, \hdots, M^n\}$ \SBcomment[Why $M^{n}$ and not $M_{u}^{n}$?]and $\wlwn$ with  $l_w=\{0, \hdots, M_w^n\}$:
+As a starting point, the original system $\qln$, with $l=\{0, \hdots, N^n\}$ is split into two subsystems: $\ulun$ with $l_u=\{0, \hdots, \Mu\}$ \SBcomment[Why $M^{n}$ and not $M_{u}^{n}$?] \SWcomment[$M^n$ is used a lot for the inner boundary index (see e.g. Eqs. \eqref{eq:connectionInterpol}) so I thought it'd be more compact to leave out the subscript. Should I add it for coherency?]\SBcomment[Or just use a different capital letter for the right grid...it's weird to have one with a subscript and one without.] and $\wlwn$ with  $l_w=\{0, \hdots, \Mw\}$:
 \begin{subequations}\label{eq:splitFDS}
     \begin{align}
         \dtt \ulun &= (c^n)^2\dxx \ulun,\\
         \dtt \wlwn &= (c^n)^2\dxx \wlwn,
     \end{align}
 \end{subequations}
-which have $M^n+1$ grid points and $M_w^n+1$ grid points respectively.\footnote{It is important to note that the superscripts $n$ in $M^n$ and $M_w^n$ are unaffected by the $\dtt$ operator after expansion.} Here, $0<M^n<N^n$ and $M_w^n = N^n - M^n$ and will thus contain one more grid point than the original system. Both systems are placed on the same domain $x$ with their locations defined as
+which have $\Mu+1$ grid points and $\Mw+1$ grid points respectively.\footnote{It is important to note that the superscripts $n$ in $\Mu$ and $\Mw$ are unaffected by the $\dtt$ operator after expansion.} Here, $0<\Mu<N^n$ and $\Mw = N^n - \Mu$ and will thus contain one more grid point than the original system. Both systems are placed on the same domain $x$ with their locations defined as
 \begin{equation}\label{eq:gridLocations}
-    x_{u_\lu}^n =\lu h^n, \quad x_{w_\lw}^n = L^n-(M_w^n-\lw)h^n.
+    x_{u_\lu}^n =\lu h^n, \quad x_{w_\lw}^n = L^n-(\Mw-\lw)h^n.
 \end{equation}
-% \SBcomment[aaa a] % this line does work 
-\SBcomment[aaaa aaaaaaaa] % this line works now!
- See Figure \ref{fig:twoFreeStrings}.
+See Figure \ref{fig:twoFreeStrings}.
 \def\figwidth{0.99}
 \begin{figure}[t]
     \centering
@@ -198,24 +190,24 @@ which have $M^n+1$ grid points and $M_w^n+1$ grid points respectively.\footnote{
     \vspace{-1em}\caption{Illustration of the dynamic grid. The x-axis shows the location of the respective grid points with `$x^n$' omitted for brevity. 
     (a) $\Nfrac^n = 30$. As $\Nfrac^n = N^n$, the inner boundaries overlap. (b) $\Nfrac^n = 30.5$. The wave speed $c^n$ and thus $h^n$ are decreased, $\Nfrac^n \neq N^n$ and the inner boundaries no longer overlap. (c) Figure \ref{fig:twoFreeStringsGridMove} zoomed-in. All grid points (including virtual grid points) used in Eq. \eqref{eq:connectionInterpol} are shown. The distance between the inner boundaries is expressed using $\alpha^n$ in Eq. \eqref{eq:alphaDef}. (Image adapted from \cite{Willemsen2021a}.)}
 \end{figure}
-The grid locations $\lu = 0$ and $\lw = 0$ are referred to as the \textit{outer boundaries} and, as can be observed from Eq. \eqref{eq:gridLocations}, are fixed to be at the limits of the system domain, i.e., $x_{u_0}^n = 0$ and $x_{w_{M_w^n}}^n = L^n, \forall n$. Furthermore, Dirichlet boundary conditions are imposed on the outer boundaries according to Eq. \eqref{eq:discDirichlet}. 
-The grid locations $\lu = M^n$ and $\lw = 0$ are referred to as the \textit{inner boundaries}. If $\Nfrac^n = N^n$, i.e. $\Nfrac^n$ is an integer, the inner boundaries overlap and need to abide the following condition
+The grid locations $\lu = 0$ and $\lw = 0$ are referred to as the \textit{outer boundaries} and, as can be observed from Eq. \eqref{eq:gridLocations}, are fixed to be at the limits of the system domain, i.e., $x_{u_0}^n = 0$ and $x_{w_{\Mw}}^n = L^n, \forall n$. Furthermore, Dirichlet boundary conditions are imposed on the outer boundaries according to Eq. \eqref{eq:discDirichlet}. 
+The grid locations $\lu = \Mu$ and $\lw = 0$ are referred to as the \textit{inner boundaries}. If $\Nfrac^n = N^n$, i.e. $\Nfrac^n$ is an integer, the inner boundaries overlap and need to abide the following condition
 \begin{equation}\label{eq:rigid}
-    u_{M^n}^n = w_0^n, \quad \text{if}\  x_{u_{M^n}}^n =  x_{w_0}^n,
+    u_{\Mu}^n = w_0^n, \quad \text{if}\  x_{u_{\Mu}}^n =  x_{w_0}^n,
 \end{equation}
 which acts as a rigid connection between the inner boundaries. As shown in
-\cite{Willemsen2021a}, combining this condition with Neumann boundary conditions imposed on the inner boundaries (as in Eq. \eqref{eq:discNeumann}) shows that the virtual grid points needed to calculate the $u_{M^n}^n$ and $w_0^n$ can be set according to:
+\cite{Willemsen2021a}, combining this condition with Neumann boundary conditions imposed on the inner boundaries (as in Eq. \eqref{eq:discNeumann}) shows that the virtual grid points needed to calculate $u_{\Mu}^n$ and $w_0^n$ can be set according to:
 \begin{equation}\label{eq:perfectOverlap}
-    u_{M^n+1}^n = w_1^n, \qaq w_{-1}^n = u_{M^n-1}^n.
+    u_{\Mu+1}^n = w_1^n, \qaq w_{-1}^n = u_{\Mu-1}^n.
 \end{equation}
 This can be shown to yield identical behaviour to the original system.
 
 Consider a decrease in wave speed $c^n$, which yields a decrease in $h^n$. This causes all grid points to move towards their respective outer boundary according to Eq. \eqref{eq:gridLocations} (see Figure \ref{fig:twoFreeStringsGridMove}). As the inner boundaries no longer overlap, i.e., $\Nfrac^n \neq N^n$, Eq. \ref{eq:perfectOverlap} can not be used and alternative definitions for the virtual grid points need to be found. To this end, quadratic Lagrange interpolation can be used to yield:
 \begin{subequations}\label{eq:connectionInterpol}
     \begin{align}
-            &u_{M^n+1}^n = \Aterm u_{M^n}^n + w_0^n - \Aterm w_1^n,
+            &u_{\Mu+1}^n = \Aterm u_{\Mu}^n + w_0^n - \Aterm w_1^n,
         \label{eq:calcUMP1}\\
-            &w_{-1}^n = -\Aterm u_{M^n-1}^n + u_{M^n}^n+\Aterm w_{0}^n.\label{eq:calcWM1}
+            &w_{-1}^n = -\Aterm u_{\Mu-1}^n + u_{\Mu}^n+\Aterm w_{0}^n.\label{eq:calcWM1}
     \end{align}
 \end{subequations}
 where
@@ -229,14 +221,14 @@ and
 is the fractional part of $\Nfrac^n$. Also see Figure \ref{fig:twoFreeStringsGridZoomed}.
 
 \subsection{Matrix Form}\label{sec:matrixForm}
-Similar to Sec. \ref{sec:matrixFormOrig}, system \eqref{eq:splitFDS} can be written in matrix form. The state of the subsystems can be written in vector form according to $\u = [u_1^n, u_2^n, \hdots, u_{M^n}^n]^T$ and $\w = [w_0^n, w_1^n, \hdots, w_{M_w^n-1}^n]^T$ which are $M^n \times 1$ and $M_w^n \times 1$ respectively. The full state can then be written as $\MoneD \times 1$ vector
+Similar to Sec. \ref{sec:matrixFormOrig}, system \eqref{eq:splitFDS} can be written in matrix form. The state of the subsystems can be written in vector form according to $\u = [u_1^n, u_2^n, \hdots, u_{\Mu}^n]^T$ and $\w = [w_0^n, w_1^n, \hdots, w_{\Mw-1}^n]^T$ which are $\Mu \times 1$ and $\Mw \times 1$ respectively. The full state can then be written as $\MoneD \times 1$ vector
 \begin{equation}\label{eq:uStack}
     \uStack^n = \begin{bmatrix}
     \u^n\\
     \w^n
     \end{bmatrix},
 \end{equation}
-where $\MoneD = M^n + M_w^n$.
+where $\MoneD = \Mu + \Mw$.
 The update equation of the 1D wave equation including the dynamic grid can then be written in matrix form as
 \begin{equation}\label{eq:1DwaveDynMatrix}
     \uStack^{n+1} = (2\I_\MoneD + (c^n)^2k^2\DDxx)\uStack^n - \uStack^{n-1} 
@@ -252,7 +244,7 @@ where $\DDxx$ is an adapted version of $\Dxx$ in Eq. \eqref{eq:dxxMat} to includ
          & \boldsymbol{0} & &  &  &\ddots & \ddots &
     \end{bmatrix}
 \end{equation}
-and is $\MoneD \times \MoneD$. \SWcomment[something about the sizes of the quadrants and that they correspond to $M^n$ and $M_w^n$?] In the extreme case that one of the systems only has one moving grid point, e.g., if $\w^n =[w_0^n]$, the lower-right quadrant in Eq. \eqref{eq:magicMatrix} will only have one entry (being $\Aterm-2$), and the lower-left and top-right quadrants will only have one row and one column respectively. 
+and is $\MoneD \times \MoneD$. \SWcomment[something about the sizes of the quadrants and that they correspond to $\Mu$ and $\Mw$?] In the extreme case that one of the systems only has one moving grid point, e.g., if $\w^n =[w_0^n]$, the lower-right quadrant in Eq. \eqref{eq:magicMatrix} will only have one entry (being $\Aterm-2$), and the lower-left and top-right quadrants will only have one row and one column respectively. 
 
 \subsection{Adding and Removing Points}\label{sec:addRemove}
 If $c^n$ is decreased such that $N^n > N^{n-1}$, a grid point is added to the system. One can add points to either $\u$ or $\w$, or in an alternating fashion as in \cite{Willemsen2021a}, but here, only changes in $\u$ are considered. A grid point can be added to $\u$ according to
@@ -285,12 +277,12 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
     \u^{n-1} &= [u_1^{n-1}, \hdots, u_{M^{n-1}-1}^{n-1}]^T,
     \end{aligned} \quad \text{if } N^n < N^{n-1}.
 \end{equation}
-The limit on changing grid configurations is the addition / removal of one grid point per sample. Practically, this limit needs to be much lower to keep the system well-behaved. In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$, no artifacts 
+The limit on changing grid configurations is the addition / removal of one grid point per sample. Practically, this limit needs to be much lower to keep the system well-behaved. In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
 
 \subsection{State Correction}\label{sec:stateCorrection}
-At the moment that a point is removed, and thus $x_{u_{M^n}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $u_M^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artifacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
+At the moment that a point is removed, and thus $x_{u_{\Mu}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $u_\Mu \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
 \begin{align*}
-    \dtt u_\lu^n = (c^n)^2\dxx u_\lu^n+ J_u(x_{u_{M^n}}^n)
+    \dtt u_\lu^n = (c^n)^2\dxx u_\lu^n+ J_u(x_{u_{\Mu}}^n)
     F_\text{c}^n,\\
     \dtt w_\lw^n = (c^n)^2\dxx w_\lw^n - J_w(x_{w_0}^n)
     F_\text{c}^n,
@@ -306,7 +298,7 @@ where
     \quad\text{and}\\
     J_w(x_i^n) &=
     \begin{cases}
-        \frac{1}{h^n}, & \lw = \lfloor x_i^n/h^n \rfloor - M^n\\
+        \frac{1}{h^n}, & \lw = \lfloor x_i^n/h^n \rfloor - \Mu\\
         0,& \text{otherwise}
     \end{cases}
 \end{aligned}
@@ -519,7 +511,7 @@ and removing a row from the system happens according to
     \end{aligned}\quad \text{if } N_y^n < N_y^{n-1}.
 \end{equation}
 \subsubsection{State correction}
-Like in the 1D case presented in Sec. \ref{sec:stateCorrection}, an artificial spring force can be added to the inner boundaries to prevent audible artifacts when removing grid points. If the state correction is applied to all grid points along the inner boundaries except for those at the intersection of the horizontal and vertical inner boundaries, (i.e., $u_{1, M_{x,1}^n, M_{y,1}^n}^n$, $u_{2, 0, M_{y,2}^n}^n$,$u_{3, M_{x,3}^n, 0}^n$ and $u_{4, 0, 0}^n$) the system can still be solved explicitly. \SWcomment[move to results? $\rightarrow$]It has been found that excluding the state correction at these locations has a minimal effect on the eventual behaviour of the system, and applying the state correction everywhere else already prevents audible artifacts.  
+Like in the 1D case presented in Sec. \ref{sec:stateCorrection}, an artificial spring force can be added to the inner boundaries to prevent audible artefacts when removing grid points. If the state correction is applied to all grid points along the inner boundaries except for those at the intersection of the horizontal and vertical inner boundaries, (i.e., $u_{1, M_{x,1}^n, M_{y,1}^n}^n$, $u_{2, 0, M_{y,2}^n}^n$,$u_{3, M_{x,3}^n, 0}^n$ and $u_{4, 0, 0}^n$) the system can still be solved explicitly. \SWcomment[move to results? $\rightarrow$]It has been found that excluding the state correction at these locations has a minimal effect on the eventual behaviour of the system, and applying the state correction everywhere else already prevents audible artefacts.  
 
 \subsection{2D Wave Equation}
 The PDE of the 2D wave equation is defined as
@@ -695,8 +687,11 @@ Not limited to two dimensions, could extend to 3D systems
 
 Real-time implementation and control, such that a player can `mould' their instrument while performing, potentially discovering new ways of expression with the instrument at hand.   
 
+At its current stage, physical accuracy and stability conditions are not the main focus of the method. Instead, efficiency and applicability to already existing models are more important for this contribution.
+
+
 \section{ACKNOWLEDGMENTS}
-This  work  has  been  funded  in  part  by  the European Art-Science-Technology Network for Digital Creativity (EASTN-DC). Thanks to the DAFx20in21 committee for \SWcomment[supporting this publication to be open access].
+This  work  has  been  funded  in  part  by  the European Art-Science-Technology Network for Digital Creativity (EASTN-DC). Thanks to the DAFx20in21 committee for \SWcomment[providing open access publication of this work].
 
 \bibliography{jaes.bib}
 \bibliographystyle{jaes.bst}
