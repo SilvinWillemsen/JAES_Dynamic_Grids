@@ -1,0 +1,133 @@
+\begin{thebibliography}{10}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{[Online]. Available: \discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem{mcintyre1983oscillations}
+M.~E. McIntyre, R.~T. Schumacher, and J.~Woodhouse, \enquote{On the
+  oscillations of musical instruments,} \emph{JASA}, vol.~74, no.~5, pp.
+  1325--1345 (1983).
+
+\bibitem{Borin1989}
+G.~Borin, G.~De~Poli, and A.~Sarti, \enquote{A modular approach to
+  excitator-resonator interaction in physical models syntheses,} in \emph{ICMC}
+  (1989).
+
+\bibitem{Carrier1945}
+G.~F. Carrier, \enquote{On the non-linear vibration problem of the elastic
+  string,} \emph{Quart. Appl. Math.}, vol.~3, no.~2, pp. 157--165 (1945).
+
+\bibitem{Hirschberg1996}
+A.~Hirschberg, J.~Gilbert, R.~Msallam, and A.~P.~J. Wijnands, \enquote{Shock
+  Waves in Trombones,} \emph{JASA}, vol.~99, no.~3, pp. 1754-- 1758 (1996).
+
+\bibitem{Msallam2000}
+R.~Msallam, S.~Dequidt, S.~Tassart, and R.~Causs{\'e}, \enquote{Physical model
+  of the trombone including nonlinear effects. Application to the sound
+  synthesis of loud tones,} \emph{Acta Acust. Acust.}, vol.~86, pp. 725--–736
+  (2000).
+
+\bibitem{Vergez2000}
+C.~Vergez and X.~Rodet, \enquote{A new algorithm for nonlinear propagation of
+  sound wave: Application to a physical model of a trumpet,} \emph{J. Signal
+  Process.}, vol.~4, pp. 79--88 (2000).
+
+\bibitem{Willemsen2021Thesis}
+S.~Willemsen, \emph{The Emulated Ensemble: Real-Time Simulation of Musical
+  Instruments using Finite-Difference Time-Domain Methods}, Ph.D. thesis,
+  Aalborg University Copenhagen (2021 Jul.).
+
+\bibitem{valimaki2005discrete}
+V.~V{\"a}lim{\"a}ki, J.~Pakarinen, C.~Erkut, and M.~Karjalainen,
+  \enquote{Discrete-time modelling of musical instruments,} \emph{Reports on
+  progress in physics}, vol.~69, no.~1 (2005).
+
+\bibitem{Bilbao2009}
+S.~Bilbao, \emph{Numerical Sound Synthesis} (John Wiley \& Sons, 2009).
+
+\bibitem{morrison1993mosaic}
+J.~D. Morrison and J.-M. Adrien, \enquote{Mosaic: A framework for modal
+  synthesis,} \emph{CMJ}, vol.~17, no.~1, pp. 45--56 (1993).
+
+\bibitem{Mehes2016}
+S.~Mehes, M.~van Walstijn, and P.~Stapleton, \enquote{Towards a
+  virtual-acoustic string instrument,} in \emph{SMC} (2016).
+
+\bibitem{Willemsen2017}
+S.~Willemsen, S.~Serafin, and J.~R. Jensen, \enquote{Virtual Analog Simulation
+  and Extensions of Plate Reverberation,} in \emph{SMC}, pp. 314--319 (2017).
+
+\bibitem{Smith1992}
+J.~Smith, \enquote{Physical modeling using digital waveguides,} \emph{CMJ},
+  vol.~16, no.~4, pp. 74--91 (1992).
+
+\bibitem{Michon2014}
+R.~Michon and J.~Smith, \enquote{A Hybrid Guitar Physical Model Controller: The
+  {BladeAxe},} in \emph{{Proceedings ICMC|SMC|2014}} (2014).
+
+\bibitem{serafin2005virtual}
+S.~Serafin, S.~Gelineck, N.~B{\"o}ttcher, and L.~Martinussen, \enquote{Virtual
+  reality instruments capable of changing physical dimensions in real-time,} in
+  \emph{Enactive} (2005).
+
+\bibitem{leonard2013virtual}
+J.~Leonard, C.~Cadoz, N.~Castagn{\'e}, J.-L. Florens, and A.~Luciani,
+  \enquote{A virtual reality platform for musical creation: {GENESIS-RT},} in
+  \emph{CMMR}, pp. 346--371 (2013).
+
+\bibitem{Hofmann2019}
+A.~Hofmann, S.~Schmutzhard, M.~P{\`a}mies-Vil{\`a}, G.~Erdogan, and
+  V.~Chatziioannou, \enquote{An opcode implementation of a finite difference
+  viscothermal time-domain model of a tube resonator for wind instrument
+  simulations,} in \emph{ICSC2019} (2019).
+
+\bibitem{Willemsen2021a}
+S.~Willemsen, S.~Bilbao, M.~Ducceschi, and S.~Serafin, \enquote{Dynamic Grids
+  for Finite-Difference Schemes in Musical Instrument Simulations,} in
+  \emph{DAFx20in21} (2021).
+
+\bibitem{Willemsen2021b}
+S.~Willemsen, S.~Bilbao, M.~Ducceschi, and S.~Serafin, \enquote{A Physical
+  Model of the Trombone using Dynamic Grids for Finite-Difference Schemes,} in
+  \emph{DAFx20in21} (2021).
+
+\bibitem{Courant1928}
+R.~Courant, K.~Friedrichs, and H.~Lewy, \enquote{{\"U}ber die partiellen
+  Differenzengleichungen de mathematischen Physik,} \emph{Mathematische
+  Annalen}, vol. 100, pp. 32--74 (1928).
+
+\bibitem{Webb2015}
+C.~Webb and S.~Bilbao, \enquote{On the limits of real-time physical modelling
+  synthesis with a modular environment,} in \emph{DAFx-15} (2015).
+
+\bibitem{Bilbao2019}
+S.~Bilbao, M.~Ducceschi, and C.~Webb, \enquote{Large-Scale Real-Time Modular
+  Physical Modeling Sound Synthesis,} in \emph{DAFx-19} (2019).
+
+\bibitem{Willemsen2019}
+S.~Willemsen, N.~Andersson, S.~Serafin, and S.~Bilbao, \enquote{Real-Time
+  Control of Large-Scale Modular Physical Models using the Sensel Morph,} in
+  \emph{SMC}, pp. 275--280 (2019).
+
+\bibitem{soundExamples}
+{S. Willemsen}, \enquote{Sound Examples,}  (accessed Dec. 20, 2021),
+  \urlprefix\url{https://tinyurl.com/DynSoundEx}.
+
+\bibitem{Horn1991}
+R.~A. Horn and C.~R. Johnson, \emph{Topics in Matrix Analysis} (Cambridge
+  University Press, 1991).
+
+\bibitem{Morse1968}
+P.~Morse and U.~Ingard., \emph{Theoretical Acoustics} (Princeton University
+  Press, 1968).
+
+\bibitem{Hamilton2016}
+B.~Hamilton, \emph{Finite Difference and Finite Volume Methods for Wave-based
+  Modelling of Room Acoustics}, Ph.D. thesis, The University of Edinburgh
+  (2016).
+
+\end{thebibliography}
