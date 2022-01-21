@@ -27,6 +27,12 @@
 
 \include{myPreamble}
 \begin{document}
+\setstackgap{L}{14pt}
+\setstacktabbedgap{4pt}
+\def\lrgap{\kern3pt}
+\fixTABwidth{T}
+
+\def\xbracketMatrixstack#1{\left[\lrgap\tabbedCenterstack{#1}\lrgap\right]}
 
 % Page heads
 \markboth{WILLEMSEN ET AL.}{THE DYNAMIC GRID}
@@ -102,11 +108,11 @@ Eq. \eqref{eq:1DwaveCont} can then be discretised to the following FDTD scheme:
 \begin{equation}\label{eq:1dWaveDisc}
     \dtt \qln = c^2 \dxx \qln,
 \end{equation}
-which, using Eqs. \eqref{eq:FDoperators}, can be expanded to the following update equation
+which, using Eq. \eqref{eq:FDoperators}, can be expanded to the following update equation
 \begin{equation}\label{eq:1DwaveUpdate}
-    q_l^{n+1} = 2 \qln - q_l^{n-1} + \lambda^2 \left(q_{l+1}^n -2\qln + q_{l-1}^n\right),
+    q_l^{n+1} = 2 \qln - q_l^{n-1} + \lambda^2 \left(q_{l+1}^n -2\qln + q_{l-1}^n\right).
 \end{equation}
-where here, 
+Here, 
 \begin{equation}\label{eq:courant}
     \lambda = \frac{c k}{h}
 \end{equation} is referred to as the Courant number \cite{Courant1928}, and is related to stability and simulation quality as will be described in Sec. \ref{sec:quality}.
@@ -135,22 +141,31 @@ where the definitions of $\A$, $\B$, and $\C$ depend on the system at hand. Furt
 
 Using Dirichlet boundary conditions, the state $\qln$ in Sec. \ref{sec:numericalMethods} can be represented as a $(N-1) \times 1$ column vector $\q^n = [q_1^n, \hdots, q_{N-1}^n]^T$, where $T$ denotes the transpose operation. Notice that the boundaries ($q_0^n$ and $q_N^n$) are not included in the state vector as they are 0 at all times. With reference to Eq. \eqref{eq:generalMatrixUpdate}, Eq. \eqref{eq:1dWaveDisc} can then be written in matrix form using the following definitions for the matrices: 
 \begin{equation}
-    \A = \I_{N-1}, \ \ \B = 2 \I_{N-1} + \lambda^2 \Dxx, \ \ \text{and} \ \ \C = -\I_{N-1}
+    \A = \I_{N-1}, \ \ \B = 2 \I_{N-1} + \lambda^2 \Dxx, \ \ \text{and} \ \ \C = -\I_{N-1},
 \end{equation}
 % \begin{equation}
 %     \q^{n+1} = \B\q^n - \q^{n-1}
 % \end{equation}
 % where $\B$
 where $(N-1)\times(N-1)$ matrix
+% \begin{equation}\label{eq:dxxMat}
+%     \Dxx =
+%     \begin{bmatrix}
+%         \ddots & \ddots & & &\mathbf{0}\\
+%         \ddots & \!\!\!\!$-2$ & 1 & & \\
+%         & 1 & \!\!\!\!$-2$ & 1 & \\
+%         & & 1 & \!\!\!\!$-2$ & \ddots \\
+%         \mathbf{0}& & & \ddots & \ddots 
+%     \end{bmatrix},
+% \end{equation}
 \begin{equation}\label{eq:dxxMat}
-    \Dxx =
-    \begin{bmatrix}
+    \Dxx = \xbracketMatrixstack{
         \ddots & \ddots & & &\mathbf{0}\\
-        \ddots & \!\!\!\!$-2$ & 1 & & \\
-        & 1 & \!\!\!\!$-2$ & 1 & \\
-        & & 1 & \!\!\!\!$-2$ & \ddots \\
+        \ddots & -2 & 1 & & \\
+        & 1 & -2 & 1 & \\
+        & & 1 & -2 & \ddots \\
         \mathbf{0}& & & \ddots & \ddots 
-    \end{bmatrix},
+    },
 \end{equation}
 and $\I_{N-1}$ is the identity matrix of the same size. 
 %\SBcomment[Can be slightly cleaner to define ${\mathbf D}_{xx}$ as a "scaled" Laplacian, so without the factor of $1/h^2$. Then you just have $\lambda$ in your update!] \SWcomment[True! But should it then be $\lambda^n$? Because a change in $c^n$ cancels out a change in $h^n$ here. If I do the same for the stiff string, it definitely needs to be $\lambda^n$ and $\mu^n$ as $\kappa^n$ and $c^n$ can be set independently.]
@@ -173,17 +188,19 @@ This ensures that $\lambda$ is as close to $1$ as possible while still satisfyin
 
 \section{THE DYNAMIC GRID}\label{sec:dynamicGrid}
 As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. 
-Leaving sample rate $f_\text{s}$, and thus $k$ fixed, one can observe from the 1D wave equation that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. Parameter changes cause several computational issues to emerge. 
+Leaving sample rate $f_\text{s}$, and thus $k$ fixed, one can observe from the 1D wave equation that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
 
+Parameter changes cause several computational issues to emerge. 
+%
 % \SBcomment[OK, this maybe needs more explanation. As in, you should say that you are holding $k$ and $L$ fixed.] \SWcomment[Added static $k$ above. $L$ can still change as will be done in the 2D case.] \SBcomment[Also, you're working implicitly from the assumption that $\lambda = 1$ to start with. But you don't need to do this...might be better to introduce $\lambda$ through an initial $h = ck/\lambda$.] \SWcomment[Hmm.. not sure how to write this. Should I say that we can now set $\lambda$ freely (not calculating it from existing parameters) as long as it satisfies Eq. \eqref{eq:CFL}?]\SBcomment[Can't you just write $h=ck/\lambda$ in Eq. 12?] \SWcomment[I suppose so, but I do refer back to \eqref{eq:orderOfCalc} quite a bit in the explanation. I think it's important to show that the fractional $\Nfrac$ removes the flooring operation in \eqref{eq:orderOfCalc}, so it's better to write it out like this I think. Besides, $L$ is not necessarily fixed, so then $h=ck/\lambda$ would not be correct. In any case please tell me if you think differently!]\SBcomment[OK, here, not sure I get it. $h = ck/\lambda$ is just a definition isn't it? Like it always has to be correct, right?] \SWcomment[I suppose it depends on how you calculate $\lambda$. If it is defined as the usual $\lambda = ck/h$, the calculation $h=ck/\lambda$ will not include the length (it will simply boil down to $h=h$). To have $L$ included, $\lambda$ will have to be defined as $\lambda=(ck/L) \lfloor L / ck\rfloor$ I believe.]\SBcomment[The problem is in moving from Eq. 11 (general $\lambda$) to Eq. 12, where you're already implicitly setting $\lambda=1$ to start with. Which is it? In that case, you're still in the non-dynamic setting.] \SWcomment[Eq. \eqref{eq:orderOfCalc} is indeed still the non-dynamic setting, and $\lambda$ is not set to be 1 there due to the flooring operation and recalculation of $h$ (Eqs. \eqref{eq:stabilityCond} and \eqref{eq:orderOfCalc} are essentially saying the same thing: the usual non-dynamic case). Only at the end of the current paragraph (right above Sec. 2.1) I start saying that $\lambda$ can be 1 at all times if the flooring operation is removed due to the fractional $\Nfrac$. Does that clarify things, or am I missing something?]\SBcomment[I mean: in the first thing in Eq. 12 is h = ck---meaning that you are starting from the assumption that $\lambda = 1$ there. I realise that you end up a little bit away from this after truncation. But actually, this doesn't match up with what is in Eq. 11, where you have just a general $\lambda$, possibly set well away from 1. Like there's an extra condition in Eq. 12 beyond Eq. 11.  ] \SWcomment[Right, I think we're getting closer.. How about I put Eq. (11) in-text, and elaborate on the fact that Eq. (12) starts off with this condition satisfied with equality to eventually yield the highest simulation quality? I just think writing $h = ck/\lambda$ is a bit counter-intuitive as $\lambda$ is calculated from $h$ not vice-versa.]\SBcomment[This isn't really true. You can set $\lambda$ to be whatever you want, and then set $h$ from it (and sometimes, for nonlinear problems, we do this!). They're on an equal footing really. But I'm not sure this is so important here...] \SWcomment[Ahh right! That makes sense.. Yeah I think this got a bit out of hand haha.. I'll just try to do what I think is least confusing, and then we can start another discussion ;)] 
+%
+First, a change in the wave speed $c$ will cause a change in $\lambda$ through Eq. \eqref{eq:orderOfCalc}, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
 
-First, a change in the wave speed $c$ will cause a change in $\lambda$, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
-
-In this work, a \textit{fractional} number of intervals $\Nfrac = L / h$ is proposed such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ will potentially allow for smooth transitions between grid configurations. 
+This work proposes a \textit{fractional} number of intervals $\Nfrac = L / h$ such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ will potentially allow for smooth transitions between grid configurations. 
 
 \subsection{Proposed Method}
 In the following, the location of a grid point $q_l$ at time index $n$ will be written as $x_{q_l}^n$ (in m from the left boundary). Moreover, the following time-varying parameters are indicated with a superscript $n$: $L^n$, $c^n$, $h^n$, $\lambda^n$, $\Nfrac^n$ and $N^n$. % and $f_0^n
-As a starting point, the original system $\qln$, with $l=\{0, \hdots, N^n\}$ \MDcomment[Is this now taking into account the end points?] \SWcomment[Yes definitely!] is split into two subsystems: $\ulun$ with $l_u=\{0, \hdots, \Mu\}$ and $\wlwn$ with  $l_w=\{0, \hdots, \Mw\}$:
+As a starting point, the original system $\qln$, with $l=\{0, \hdots, N^n\}$ is split into two subsystems: $\ulun$ with $l_u=\{0, \hdots, \Mu\}$ and $\wlwn$ with  $l_w=\{0, \hdots, \Mw\}$:
 \begin{subequations}\label{eq:splitFDS}
     \begin{align}
         \dtt \ulun &= (c^n)^2\dxx \ulun,\\
@@ -263,12 +280,12 @@ The 1D wave equation including the dynamic grid can then be written in matrix fo
 where $\lambda^n = c^nk/h^n$ (which can always be set to 1 in the case of the 1D wave equation), and $\DDxx$ is an adapted version of $\Dxx$ in Eq. \eqref{eq:dxxMat} to include the quadratic interpolation presented in Eq. \eqref{eq:connectionInterpol}:
 \begin{equation}\label{eq:magicMatrix}
     \!\!\!\!\!\!\DDxx = \begin{bmatrix}[cccc|cccc]
-     & \ddots  &\ddots & & & & \boldsymbol{0} & \\
+     & \ddots  &\ddots & & & & \mathbf{0} & \\
        & \ddots & -2 & 1 & & & & \\
       & & 1 & \Aterm -2 & 1 & -\Aterm & \\ \cline{2-7}
       & & -\Aterm & 1 & \Aterm -2 & 1 & & \\
          & & & &1 & -2 & \ddots  \\
-         & \boldsymbol{0} & &  &  &\ddots & \ddots &
+         & \mathbf{0} & &  &  &\ddots & \ddots &
     \end{bmatrix}
 \end{equation}
 and is $\MoneD \times \MoneD$. \SWcomment[something about the sizes of the quadrants and that they correspond to $\Mu$ and $\Mw$?] In the extreme case that one of the systems only has one moving grid point, e.g., if $\w^n =[w_0^n]$, the lower-right quadrant in Eq. \eqref{eq:magicMatrix} will only have one entry (being $\Aterm-2$), and the lower-left and top-right quadrants will only have one row and one column respectively. 
