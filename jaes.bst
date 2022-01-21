@@ -1364,7 +1364,6 @@ FUNCTION {conference}
       format.bvolume output
       format.number.series output
       format.chapter.pages output
-      format.publisher.address output
       format.edition output
       format.date "year" output.check
     }
