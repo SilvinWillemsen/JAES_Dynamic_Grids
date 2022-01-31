@@ -112,7 +112,7 @@
 \def\boxcaptionnumfont{\fontsize{8}{9}\selectfont\bfseries}% 
 %% BM
 \def\indexfont{\fontsize{9}{11}\selectfont\raggedright}
-\def\bibliofont{\fontsize{10}{12}\selectfont}
+\def\bibliofont{\fontsize{8}{10}\selectfont}
 %
 \def\listfont{}
 \def\listdevicefont{}
