@@ -2,8 +2,8 @@
 \documentclass[fleqn]{jaes}
 
 % Metadata Information
-\jyear{2021}
-\jmonth{June}
+\jyear{2022}
+\jmonth{January}
 %\jvol{69}
 %\jnum{3}
 
@@ -173,7 +173,7 @@ In order to ensure stability for the scheme in Eq. \eqref{eq:1dWaveDisc} the Cou
     \lambda \leq 1.
 \end{equation}
 %
-If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an exact solution to Eq. \eqref{eq:1DwaveCont}. In the case that $\lambda < 1$, numerical error is introduced, which decreases the quality of the simulation shown by a decrease in bandwidth and dispersive effects. It is important to note that the smaller $\lambda$ is, the lower the simulation quality.
+If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an exact solution to Eq. \eqref{eq:1DwaveCont} at the grid locations \cite{Bilbao2009}. In the case that $\lambda < 1$, numerical error is introduced, which decreases the quality of the simulation shown by a decrease in bandwidth and dispersive effects. It is important to note that the smaller $\lambda$ is, the lower the simulation quality.
 
 Usually, Eq. \eqref{eq:CFL} is rewritten in terms of the grid spacing such that $h \geq c k$,
 which is implemented as
@@ -183,8 +183,7 @@ which is implemented as
 This ensures that $\lambda$ is as close to $1$ as possible while still satisfying Eq. \eqref{eq:CFL}. Here, $\floor[\cdot]$ denotes the flooring operation which is necessary to ensure an integer number of intervals. Equation \eqref{eq:orderOfCalc} shows that $h$ needs to be recalculated based on integer $N$, after which $\lambda$ is calculated from this. If $L/h$ is not an integer, this means that $\lambda < 1$, yielding numerical dispersion (though usually small if $\lambda$ is near 1).
 
 \section{THE DYNAMIC GRID}\label{sec:dynamicGrid}
-As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. 
-Leaving sample rate $f_\text{s}$, and thus $k$ fixed, one can observe from the 1D wave equation that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
+As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. In audio applications, the sample rate $f_\text{s}$, and thus the time step $k$, are rarely varied \cite{Bilbao2009}, and are therefore assumed fixed in this work. One can observe from the 1D wave equation in Eq. \eqref{eq:1DwaveCont}, that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
 
 Parameter changes cause several computational issues to emerge. 
 %
@@ -192,7 +191,7 @@ Parameter changes cause several computational issues to emerge.
 %
 First, a change in the wave speed $c$ will alter $\lambda$ through Eq. \eqref{eq:orderOfCalc}, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
 
-This work proposes a \textit{fractional} number of intervals $\Nfrac = L / h$ such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ potentially allows for smooth transitions between grid configurations. 
+This work proposes a nonuniform grid with a \textit{fractional} number of intervals $\Nfrac = L / h$ such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ potentially allows for smooth transitions between grid configurations. 
 
 \subsection{Proposed Method}
 In the following, the location of a grid point $q_l$ at time index $n$ will be written as $x_{q_l}^n$ (in m from the left boundary). Moreover, the following time-varying parameters are indicated with a superscript $n$: $L^n$, $c^n$, $h^n$, $\lambda^n$, $\Nfrac^n$ and $N^n$. % and $f_0^n
@@ -210,17 +209,18 @@ which have $\Mv+1$ grid points and $\Mw+1$ grid points respectively. (It is impo
 % \SBcomment[The subscripting gets 4 layers deep here...this is pretty heavy! Any way to simplify?] \SWcomment[Hmm.. possibly using a subscript $m$ for $w$ and keep $l$ for $v$. But in the 2D case we'll get a general indexing $l_i$ for the $i$\th subsystem...]\SBcomment[Seems to me you could write just $x_{l_{v}}$ rather than $x_{v_{l_{v}}}$] \SWcomment[Hmm.. when using a number it will become ambiguous which system it is. (Is $x_0^n$ the point where $l_v = 0$ or $l_w = 0$?)]\SBcomment[OK, I sort of see, but this is getting very very hard to follow for me!] \SWcomment[I get that.. Maybe a grid point as a function of $x^n$? So $x^n(v_\lv)$? That's also nasty... I'll think a little more about it.]
 % 
 % \SWcomment[What about $\mathfrak{X}^n(v_\lv)$ or some other ``special'' `$x$'-symbol?]
-See Figure \ref{fig:twoFreeStrings}.
+See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, we assume sub-audio rate parameter changes such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}}  \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is used. 
 \def\figwidth{0.99}
 \begin{figure}[t]
     \centering
     \subfloat[]{\label{fig:twoFreeStrings}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringsNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:twoFreeStringsGridMove}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringsGridMoveNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:twoFreeStringsGridZoomed}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringGridMoveZoomedNarrow.eps}}}
-    \vspace{-1em}\caption{Illustration of the dynamic grid. The x-axis shows the location of the respective grid points with `$x^n$' omitted for brevity. 
+    \vspace{-1em}\caption{Illustration of the dynamic grid. System $q_l^n$ is split into subsystems $v_\lv^n$ and $w_\lw^n$. The x-axis shows the location of the respective grid points with `$x^n$' omitted for brevity. 
     (a) $\Nfrac^n = 30$. As $\Nfrac^n = N^n$, the inner boundaries overlap. (b) $\Nfrac^n = 30.5$. The wave speed $c^n$ and thus $h^n$ are decreased, $\Nfrac^n \neq N^n$ and the inner boundaries no longer overlap. (c) Figure \ref{fig:twoFreeStringsGridMove} zoomed-in. All grid points (including virtual grid points) used in Eq. \eqref{eq:connectionInterpol} are shown. The distance between the inner boundaries is expressed using $\alpha^n$ in Eq. \eqref{eq:alphaDef}. (Image adapted from \cite{Willemsen2021a}.)}
 \end{figure}
-The grid locations $\lv = 0$ and $\lw = \Mw$ are referred to as the \textit{outer boundaries} and, as can be observed from Eq. \eqref{eq:gridLocations}, are fixed to be at the limits of the system domain, i.e., $x_{v_0}^n = 0$ and $x_{w_{\Mw}}^n = L^n, \forall n$. Furthermore, Dirichlet boundary conditions are imposed on the outer boundaries according to Eq. \eqref{eq:discDirichlet}. 
+
+With reference to Eq. \eqref{eq:gridLocations}, the grid locations $\lv = 0$ and $\lw = \Mw$ are referred to as the \textit{outer boundaries} and are fixed to be at the limits of the system domain, i.e., $x_{v_0}^n = 0$ and $x_{w_{\Mw}}^n = L^n, \forall n$. Furthermore, Dirichlet boundary conditions are imposed on the outer boundaries according to Eq. \eqref{eq:discDirichlet}. 
 The grid locations $\lv = \Mv$ and $\lw = 0$  are referred to as the \textit{inner boundaries}, at which Eq. \eqref{eq:splitFDS} (after expansion) requires a definition for the \textit{virtual grid points} $v_{\Mv+1}^n$ and $w_{-1}^n$. If $\Nfrac^n = N^n$, i.e. $\Nfrac^n$ is an integer, the inner boundaries overlap and the following condition must be satisfied:
 \begin{equation}\label{eq:rigid}
     v_{\Mv}^n = w_0^n, \quad \text{if}\  x_{v_{\Mv}}^n =  x_{w_0}^n,
@@ -283,7 +283,8 @@ where $\lambda^n = c^nk/h^n$ (which can always be set to 1 in the case of the 1D
      & \ddots  &\ddots & & & & \mathbf{0} & \\
        & \ddots & -2 & 1 & & & & \\
       & & 1 & \Aterm -2 & 1 & -\Aterm & \\ \cline{2-7}
-      & & -\Aterm & 1 & \Aterm -2 & 1 & & \\
+      & & & & & & & \\[-0.9em]
+      & & -\Aterm & 1 & \Aterm -2 & 1 & & \\[-0.5em]
          & & & &1 & -2 & \ddots  \\
          & \mathbf{0} & &  &  &\ddots & \ddots &
     \end{bmatrix}
@@ -382,7 +383,7 @@ Using
 \end{subequations}
 Eq. \eqref{eq:stiffString} can be discretised using the following FDTD scheme:
 \begin{equation}\label{eq:stiffStringFDS}
-    \dtt \qln = c^2 \dxx \qln - \kappa^2 \dxxxx \qln - 2\sigma_0\dtd \qln + 2 \sigma_1 \dtm \dxx \qln,
+    \!\!\!\!\!\!\!\!\!\dtt \qln \!=\! c^2 \dxx \qln \!-\! \kappa^2 \dxxxx \qln\!\! -\! 2\sigma_0\dtd \qln\! +\! 2 \sigma_1 \dtm \dxx \qln,\!\!\!
 \end{equation}
 where $\dxxxx = \dxx\dxx$. The first-order temporal operators for the damping terms are chosen like this to keep the system explicit. Note that the stability condition is now $h\! \geq\! \sqrt{\tfrac{1}{2}\left(c^2k^2 + 4\sigma_1 k + \sqrt{(c^2k^2 + 4\sigma_1k)^2 +16\kappa^2k^2}\right)}$ (in the time-invariant case).
 Equation \eqref{eq:stiffStringFDS} can be written in matrix form using Eq. \eqref{eq:generalMatrixUpdate} with 
@@ -415,10 +416,9 @@ where $\mu^n = \kappa^n k/(h^n)^2$ and (for simply supported boundary conditions
     \DDxxxx = \DDxx\DDxx.
 \end{equation}
 Notice that $\kappa^n$, $\sigma_0^n$ and $\sigma_1^n$ are now allowed to be time-varying. Furthermore, $h^n$ can be obtained by calculating the stability condition with equality. %Also note that damping terms have been excluded for brevity, but can be added trivially.
-Sound examples can be found via as well as an implementation of the dynamic stiff string can be found via \cite{soundExamples}.
-
+Sound examples can be found via as well as an implementation of the dynamic stiff string can be found via \cite{soundExamples}. One example shows a string being made more inharmonic by increasing $\kappa^n$ but decreasing $c^n$ to retain the same pitch. Another varies $L^n$, $c^n$, $\kappa^n$, $\sz^n$ and $\so^n$ such that the timbral qualities of the string vary between a regular string, its octave, a vibraphone and a marimba.
 \section{2D SYSTEMS}\label{sec:2D}
-The framework presented in Sec. \ref{sec:dynamicGrid} can be extended to higher-dimensional systems, such as membranes and plates. First, FDTD methods in a 2D context will be presented.
+This section extends the framework presented in Sec. \ref{sec:dynamicGrid} to higher-dimensional systems. 
 
 A rectangular 2D system can be described by a state variable $q = q(x,y,t)$ defined over $(x ,y) \in [0, L_x] \times [0, L_y]$ with sidelengths $L_x$ and $L_y$ (both in m). Discretising $q$ will result in grid function $q_{l,m}^n$ where $l \in \{0, \hdots, N_x\}$ and $m \in \{0, \hdots, N_y\}$, and the number of intervals in the $x$ and $y$-direction are $N_x = \floor[L_x/h]$ and $N_y = \floor[L_y/h]$ respectively. Notice that the same grid spacing $h$ is used in both the $x$ and $y$-direction, which is typical for isotropic, homogeneous systems.
 
@@ -629,8 +629,7 @@ where $\DDxx$ and $\DDyy$ include the effect of the interpolation at the inner b
 
 \subsection{Damped Thin Plate}\label{sec:thinPlate}
 Similar to the damped stiff string presented in Sec. \ref{sec:stiffString}, one can extend the dynamic grid method to other systems using higher-order spatial derivatives.
-
-Consider the PDE of a damped thin plate \cite{Morse1968, Bilbao2009}
+Consider the PDE of a damped thin plate \cite{Bilbao2009}
 \begin{equation}\label{eq:thinPlatePDE}
     \ptt q = -\kappa^2\Delta\Delta q -2\sigma_0\pt q +2\sigma_1\pt\Delta q,
 \end{equation}
@@ -670,7 +669,7 @@ where $h^n = 2\sqrt{\kappa^n k}$, and for simply supported boundary conditions
 \begin{equation}\label{eq:4thOrder2D}
     \DDDeltaDelta = \DDDelta\DDDelta,
 \end{equation}
-which is of size $\MtwoD \times \MtwoD$. Sound examples can be found via \cite{soundExamples}.
+which is of size $\MtwoD \times \MtwoD$. Sound examples can be found via \cite{soundExamples}. One example shows a change in $\kappa^n$ (and $\so^n$) modelling an increase in plate thickness, where another shows changes in $L_y^n$. 
 
 \section{RESULTS}\label{sec:analysis}
 % To evaluate the dynamic grid several analyses have been carried out... 
@@ -684,7 +683,7 @@ In this section, results from the dynamic schemes are presented using a modal an
 % What I do know is that the determinant of $\BB$ is 1, for any value of $\alpha^n$ (but I suppose that counts for all matrices in 1-step form). Either way, I hope that that helps to prove something...]
 
 \subsection{Modal Analysis}
-One can retrieve the modal frequencies of the implementation of the dynamic grid by performing a modal analysis of the update equation in matrix form. For reference, the general form is Eq. \eqref{eq:generalDynGridMatrix} with matrices of the various systems defined in Eqs. \eqref{eq:1DwaveDynMatrix}, \eqref{eq:stiffStringDynMatrix}, \eqref{eq:2DwaveDynMatrix} and \eqref{eq:thinPlateDynMatrix}. Assuming $\sigma_0 = \sigma_1 = 0$, (as the influence of losses on modal frequencies are very small for damped systems), and for sub-audio rate parameter variations, the $p$\th numerical modal frequency can be calculated as
+One can retrieve the modal frequencies of the implementation of the dynamic grid by performing a modal analysis of the update equation in matrix form. For reference, the general form is Eq. \eqref{eq:generalDynGridMatrix} with matrices of the various systems defined in Eqs. \eqref{eq:1DwaveDynMatrix}, \eqref{eq:stiffStringDynMatrix}, \eqref{eq:2DwaveDynMatrix} and \eqref{eq:thinPlateDynMatrix}. Assuming $\sigma_0^n = \sigma_1^n = 0$, (as the influence of losses on modal frequencies are very small for damped systems), and for sub-audio rate parameter variations, the $p$\th numerical modal frequency can be calculated as
 \begin{equation}\label{eq:modalAnalysis}
     f_p^n \approxeq \frac{1}{2 \pi k}\cos^{-1}\left(\frac{1}{2}\text{eig}_p(\BB)\right),
 \end{equation}
@@ -694,7 +693,7 @@ To determine the accuracy of the frequencies obtained in Eq. \eqref{eq:modalAnal
 % \SWcomment[not sure if I want to include the following, but just so you know how I did the analysis :) $\rightarrow$]
 % The expected modal frequencies of a FDTD scheme as a function of the wave number can be obtained by performing a von Neumann analysis on the discrete scheme. The wave number as a function of physical parameters can then be obtained through a combination of dispersion analysis and modal analysis of the continuous PDE. \SWcomment[$\leftarrow$]
 %
-Results of a modal analysis of the dynamic stiff string with $\kappa \approx 1.26$ m$^2$/s and linear changes in $c$ corresponding to $\Nfrac^n = 15 \rightarrow 20$ can be seen in Fig. \ref{fig:resultsStiffString}, as well as the expected modal frequencies. 
+Results of a modal analysis of the dynamic stiff string with $\kappa^n \approx 1.26$ m$^2$/s and linear changes in $c^n$ corresponding to $\Nfrac^n = 15 \rightarrow 20$ can be seen in Fig. \ref{fig:resultsStiffString}, as well as the expected modal frequencies. 
 %% other wording
 % One can analyse the continuous-time equations and the FD scheme to retrieve the modal frequencies as a function of physical parameters. These will be the expected modal frequencies.
 %
@@ -710,7 +709,7 @@ Results of a modal analysis of the dynamic stiff string with $\kappa \approx 1.2
     \centering
     \subfloat[]{\label{fig:resultsStiffString}{ \includegraphics[width=\figwidth\columnwidth]{stiffStringModesNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:outputStiffSTring}{ \includegraphics[width=\figwidth\columnwidth]{stiffStringOutput.eps}}}\\
-    \vspace{-1em}\caption{The dynamic stiff string (Eq. \eqref{eq:generalDynGridMatrix} with Eq. \eqref{eq:stiffStringDynMatrix}) with $\kappa \approx 1.26$ and $c$ is (linearly) swept such that $\Nfrac^n = 15 \rightarrow 20$. (a) Results of Eq. \eqref{eq:modalAnalysis}. Modes exhibited by the system are shown in solid black, and expected modal frequencies are shown using dashed red lines. (b) Output of the dynamic stiff string excited at $n=0$ and $l=1$ and output retrieved at the same location ($\fs = 44.1$ kHz).}
+    \vspace{-1em}\caption{The dynamic stiff string (Eq. \eqref{eq:generalDynGridMatrix} with Eq. \eqref{eq:stiffStringDynMatrix}) with $\kappa \approx 1.26$ and $c^n$ is (linearly) swept such that $\Nfrac^n = 15 \rightarrow 20$. (a) Results of Eq. \eqref{eq:modalAnalysis}. Modes exhibited by the system are shown in solid black, and expected modal frequencies are shown using dashed red lines. (b) Output of the dynamic stiff string excited at $n=0$ and $l=1$ and output retrieved at the same location ($\fs = 44.1$ kHz).}
 \end{figure}
 % One can retrieve the modal frequencies of a FD scheme by performing a modal analysis on its update equation in matrix form. These can be compared to the expected modal frequencies one can obtain from the continuous 
 %
@@ -732,14 +731,14 @@ Results of a modal analysis of the dynamic stiff string with $\kappa \approx 1.2
 %
 % In the following, the difference between the expected modal frequencies and those exhibited by the implementation will be expressed in cents.
 %
-The largeest frequency deviation for the dynamic stiff string with $N^n = 15$ is around $-67$ cents, whereas this decreases to around $-56$ cents for $N^n = 19$. This is similar to the results presented in \cite{Willemsen2021a}. Setting $c=0$ (effectively reducing the stiff string to a bar), the maximum frequency deviation for $N^n=15$ is around -96 cents. 
+The largeest frequency deviation for the dynamic stiff string with $N^n = 15$ is around $-67$ cents, whereas this decreases to around $-56$ cents for $N^n = 19$. This is similar to the results presented in \cite{Willemsen2021a}. Setting $c^n=0$ (effectively reducing the stiff string to an ideal bar \cite{Bilbao2009}), the maximum frequency deviation for $N^n=15$ is around -96 cents. 
 
-Results for the dynamic thin plate appear in Table \ref{tab:2dresults}. It can be shown that for a square 2D system, the maximum frequency deviations are identical to the case of the analogous 1D system. In other words, the 1D wave equation and the 2D wave equation share maximum frequency deviations for equal values of $N^n$ (1D) and $N_x$ and $N_y$ (2D). This also holds for the bar and the thin plate. This indicates that frequency deviations do not worsen when applying the dynamic grid to higher dimensional systems.% \SWcomment[(using the Kronecker sum in Eq. \eqref{eq:dynamicKronecker})].
+Results for the dynamic thin plate appear in Table \ref{tab:2dresults}. It can be shown that for a square 2D system, the maximum frequency deviations are identical to the case of the analogous 1D system. In other words, the 1D wave equation and the 2D wave equation share maximum frequency deviations for equal values of $N^n$ (1D) and $N_x^n$ and $N_y^n$ (2D). This also holds for the ideal bar and the thin plate. This indicates that frequency deviations do not worsen when applying the dynamic grid to higher dimensional systems.% \SWcomment[(using the Kronecker sum in Eq. \eqref{eq:dynamicKronecker})].
 
 In both the 1D and 2D cases, the system exhibits following behaviours:
 \vspace{-1em}\begin{itemize}
     \item If $\alpha^n$ = 0 and parameters are static, the split system exhibits identical behaviour to the original. 
-    \item The number of modes is always equal to the number of grid points in the system (excluding fixed boundary points).
+    \item The number of modes is always equal to the number of grid points in the system (excluding boundary points).
     \item The higher the mode number, the more its frequency deviates from the expected frequency for one value of $N^n$.
     \item The higher the total number of grid points in the simulation, the smaller the frequency deviation.
     \item The location where a system is split (and thus the location where grid points are added / removed) does not influence the frequency content. 
@@ -789,7 +788,7 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
 \end{table}
 
 \subsection{System Behaviour}\label{sec:removingGridPoints}
-Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. If the system is excited at a later time, these modes will naturally be excited too.
+Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. If the system is excited at a later time, these modes will naturally be excited too.
 % Furthermore, no noticeable artefacts occur when adding grid points (at sub-audio rate parameter variations). 
 
 If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, which causes audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
@@ -827,7 +826,7 @@ This paper presents the dynamic grid, a method to smoothly change grid configura
 % using FDTD schemes in matrix form and includi
 % By writing a FDTD scheme in matrix form and including the effect of the dynamic grid there, we have been able to extend previous work one can use matrix operations to build higher-order and higher-dimensional systems.
 %
-Physical accuracy and stability conditions are not the main focus of this paper. Instead, efficiency and applicability to already existing models are more important for this contribution.
+%Physical accuracy and stability conditions are not the main focus of this paper. Instead, efficiency and applicability to already existing models are more important for this contribution.
 
 Future directions include the extension of the method presented here to 3D, performing another Kronecker sum as in Eq. \eqref{eq:dynamicKronecker} for the 3\textsuperscript{rd} dimension (see \cite{Hamilton2016}). Other future considerations include listening tests to confirm the absence of audible artefacts, as well as real-time implementation and control, such that a player can `mold' their instrument while performing, potentially discovering new ways of expression.
 
@@ -853,11 +852,13 @@ This  work  has  been  funded  in  part  by  the European Art-Science-Technology
 % \end{equation}
 
 %Biography
- \biography{Silvin Willemsen}{JAESheadshotSilvin.jpg}{Silvin Willemsen is a Postdoctoral Researcher at Aalborg University in Copenhagen, Denmark. He received his MSc. in Sound and Music Computing from Aalborg University in 2017. In 2018, he was appointed as a PhD Stipend at the Department of Architecture, Design and Media Technology at Aalborg University Copenhagen and was affiliated with the Multisensory Experience Lab. In 2021 he received his PhD degree and continues to work in the field of physical modelling for musical instrument simulations.}
+ \biography{Silvin Willemsen}{JAESheadshotSilvin.jpg}{Silvin Willemsen is a Postdoctoral Researcher at Aalborg University in Copenhagen, Denmark. He received his MSc. in Sound and Music Computing from Aalborg University in 2017. In 2018, he was appointed as a PhD Stipend at the Department of Architecture, Design and Media Technology at Aalborg University Copenhagen and was affiliated with the Multisensory Experience Lab. In 2021 he received his PhD degree %entitled ``The Emulated Ensemble: Real-Time Simulation of Musical Instruments using Finite-Difference Time-Domain Methods'', 
+ and continues to work in the field of physical modelling for musical instruments.}
  \biography{Stefan Bilbao}{stefan.jpg}{Stefan Bilbao (B.A. Physics, Harvard, 1992, MSc., PhD Electrical Engineering, Stanford, 1996 and 2001 respectively) is currently Professor of Acoustics and Audio Signal Processing in the Acoustics and Audio Group at the University of Edinburgh, and previously held positions at the Sonic Arts Research Centre, at the Queen's University Belfast, and the Stanford Space Telecommunications and Radioscience Laboratory. He is an Associate Editor of the IEEE/ACM Transactions on Audio Speech and Language Processing. He was born in Montreal, Quebec, Canada. }
  \biography{Michele Ducceschi}{ducceschi.jpeg}{Michele Ducceschi (BSc. Physics (2008), University of Padova, Italy, MSc. Acoustics (2010), University of Edinburgh, UK, PhD Mechanical Engineering (2014), ENSTA and Ecole Polytechnique, France) is an Associate Professor at the University of Bologna in Italy. He is currently the P.I. of the ERC-funded project NEMUS (2021-2026). Previously, he held positions at the University of Edinburgh. He was a Royal Society Newton International Fellow, and a Leverhulme Early Career Fellow.}
- \biography{Stefania Serafin}{Stefania.jpg}{Stefania Serafin is Professor of Sonic interaction design at Aalborg University in Copenhagen and the leader of the multi-sensory experience lab together with Rolf Nordahl.
-She is the President of the Sound and Music Computing association, Project Leader of the Nordic Sound and Music Computing network and lead of the Sound and music computing Master at Aalborg University.
-Stefania received her PhD entitled “The sound of friction: computer models, playability and musical applications” from Stanford University in 2004, supervised by Professor Julius Smith III.
-Her research on sonic interaction design, sound for virtual and augmented reality with applications in health and culture can be found here: \url{https://tinyurl.com/35wjk3jn}.}
+ \biography{Stefania Serafin}{Stefania.jpg}{Stefania Serafin is Professor of Sonic interaction design at Aalborg University in Copenhagen and the leader of the Multisensory Experience Lab together with Rolf Nordahl.
+She is the President of the Sound and Music Computing (SMC) association, Project Leader of the Nordic SMC network and lead of the SMC Master at Aalborg University.
+Stefania received her PhD % entitled “The sound of friction: computer models, playability and musical applications” 
+from Stanford University in 2004. %, supervised by Professor Julius Smith III.
+Her research on sonic interaction design, sound for virtual and augmented reality with applications in health and culture can be found \href{https://tinyurl.com/35wjk3jn}{here}.}
 \end{document}
