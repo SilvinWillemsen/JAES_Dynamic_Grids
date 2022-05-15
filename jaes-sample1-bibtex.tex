@@ -12,6 +12,7 @@
 \usepackage{hyperref}
 \usepackage{subfig}
 \usepackage{diagbox}
+% \usepackage[compact]{titlesec}
 % \usepackage{draftwatermark}
 % \SetWatermarkText{DRAFT}
 % \SetWatermarkColor[gray]{0.9}
@@ -183,7 +184,7 @@ which is implemented as
 This ensures that $\lambda$ is as close to $1$ as possible while still satisfying Eq. \eqref{eq:CFL}. Here, $\floor[\cdot]$ denotes the flooring operation which is necessary to ensure an integer number of intervals. Equation \eqref{eq:orderOfCalc} shows that $h$ needs to be recalculated based on integer $N$, after which $\lambda$ is calculated from this. If $L/h$ is not an integer, this means that $\lambda < 1$, yielding numerical dispersion (though usually small if $\lambda$ is near 1).
 
 \section{THE DYNAMIC GRID}\label{sec:dynamicGrid}
-As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. In audio applications, the sample rate $f_\text{s}$, and thus the time step $k$, are rarely varied \cite{Bilbao2009}, and are therefore assumed fixed in this work. One can observe from the 1D wave equation in Eq. \eqref{eq:1DwaveCont}, that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
+As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. In audio applications, the sample rate $f_\text{s}$, and thus the time step $k$, are rarely varied \cite{Bilbao2009}, and are therefore assumed fixed in this work. One can therefore observe from the 1D wave equation in Eq. \eqref{eq:1DwaveCont}, that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
 
 Parameter changes cause several computational issues to emerge. 
 %
@@ -199,24 +200,24 @@ As a starting point, the original system $\qln$, with $l=\{0, \hdots, N^n\}$ is 
 \begin{subequations}\label{eq:splitFDS}
     \begin{align}
         \dtt \vlvn &= (c^n)^2\dxx \vlvn,\\
-        \dtt \wlwn &= (c^n)^2\dxx \wlwn.
+        \dtt \wlwn &= (c^n)^2\dxx \wlwn,
     \end{align}
 \end{subequations}
-which have $\Mv+1$ grid points and $\Mw+1$ grid points respectively. (It is important to note that the superscripts $n$ in $\Mv$ and $\Mw$ are unaffected by the $\dtt$ operator after expansion.) Here, $0<\Mv<N^n$ and $\Mw = N^n - \Mv$ which causes system \eqref{eq:splitFDS} to contain one more grid point than the original system. Both systems are placed on the same domain $x$ with their locations defined as
+which have $\Mv+1$ grid points and $\Mw+1$ grid points respectively. (It is important to note that the superscripts $n$ in $\Mv$ and $\Mw$ are unaffected by the $\dtt$ operator after expansion.) Here, $0<\Mv<N^n$ and $\Mw = N^n - \Mv$ which causes system \eqref{eq:splitFDS} to contain one more grid point than the original system in Eq. \eqref{eq:1dWaveDisc}. Both systems are placed on the same domain $x$ with their locations defined as
 \begin{equation}\label{eq:gridLocations}
     x_{v_\lv}^n =\lv h^n, \quad x_{w_\lw}^n = L^n-(\Mw-\lw)h^n.
 \end{equation}
 % \SBcomment[The subscripting gets 4 layers deep here...this is pretty heavy! Any way to simplify?] \SWcomment[Hmm.. possibly using a subscript $m$ for $w$ and keep $l$ for $v$. But in the 2D case we'll get a general indexing $l_i$ for the $i$\th subsystem...]\SBcomment[Seems to me you could write just $x_{l_{v}}$ rather than $x_{v_{l_{v}}}$] \SWcomment[Hmm.. when using a number it will become ambiguous which system it is. (Is $x_0^n$ the point where $l_v = 0$ or $l_w = 0$?)]\SBcomment[OK, I sort of see, but this is getting very very hard to follow for me!] \SWcomment[I get that.. Maybe a grid point as a function of $x^n$? So $x^n(v_\lv)$? That's also nasty... I'll think a little more about it.]
 % 
 % \SWcomment[What about $\mathfrak{X}^n(v_\lv)$ or some other ``special'' `$x$'-symbol?]
-See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, we assume sub-audio rate parameter changes such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}}  \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is used. 
+See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, sub-audio rate parameter changes are assumed such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}} \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is implicitly used. 
 \def\figwidth{0.99}
 \begin{figure}[t]
     \centering
     \subfloat[]{\label{fig:twoFreeStrings}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringsNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:twoFreeStringsGridMove}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringsGridMoveNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:twoFreeStringsGridZoomed}{ \includegraphics[width=\figwidth\columnwidth]{twoFreeStringGridMoveZoomedNarrow.eps}}}
-    \vspace{-1em}\caption{Illustration of the dynamic grid. System $q_l^n$ is split into subsystems $v_\lv^n$ and $w_\lw^n$. The x-axis shows the location of the respective grid points with `$x^n$' omitted for brevity. 
+    \vspace{-1em}\caption{Illustration of the dynamic grid. System $q_l^n$ in Eq. \eqref{eq:1dWaveDisc} is split into subsystems $v_\lv^n$ and $w_\lw^n$ (Eq. \eqref{eq:splitFDS}). The x-axis shows the location of the respective grid points with `$x^n$' omitted for brevity. 
     (a) $\Nfrac^n = 30$. As $\Nfrac^n = N^n$, the inner boundaries overlap. (b) $\Nfrac^n = 30.5$. The wave speed $c^n$ and thus $h^n$ are decreased, $\Nfrac^n \neq N^n$ and the inner boundaries no longer overlap. (c) Figure \ref{fig:twoFreeStringsGridMove} zoomed-in. All grid points (including virtual grid points) used in Eq. \eqref{eq:connectionInterpol} are shown. The distance between the inner boundaries is expressed using $\alpha^n$ in Eq. \eqref{eq:alphaDef}. (Image adapted from \cite{Willemsen2021a}.)}
 \end{figure}
 
@@ -323,7 +324,7 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
     \v^{n-1} &:= [v_1^{n-1}, \hdots, v_{M_v^{n-1}-1}^{n-1}]^T,
     \end{aligned} \quad \text{if } N^n < N^{n-1}.
 \end{equation}
-It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample. Empirical studies confirmed that this limit needs to be much lower to keep the system well-behaved. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
+It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
 
 % \subsection{State Correction}\label{sec:stateCorrection}
 % At the moment that a point is removed, and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
@@ -786,21 +787,18 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
     \end{tabular}
     \label{tab:2dresults}
 \end{table}
-
+\vspace{-1em}
 \subsection{System Behaviour}\label{sec:removingGridPoints}
 Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. If the system is excited at a later time, these modes will naturally be excited too.
 % Furthermore, no noticeable artefacts occur when adding grid points (at sub-audio rate parameter variations). 
 
-If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, which causes audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
-The minimum value required for $\sigma_1$ to damp the highest mode depends on various factors, such as the values of other parameters and the speed of parameter variation.
-
+If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, causing audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
+The minimum value required for $\sigma_1^n$ to damp the highest mode depends on various factors, such as the values of other parameters and the speed of parameter variation.
 In the case of 2D systems, if parameters are varied such that grid points need to be removed, multiple grid points, and thus modes, `disappear' at once. Although these do not only include the highest frequency modes, damping does seem to take care of noticeable artefacts. 
 
 For the lossless systems presented in this paper, local losses could be added at the inner boundaries, presented in \cite{Willemsen2021a, Willemsen2021b} as displacement / state correction. Although this successfully prevents noticeable artefacts, this method does introduce unnatural losses to the system.
 
 % \SWcomment[One can also see it in time-space domain.] Consider the dynamic 1D wave equation in Eq. \eqref{eq:splitFDS} where $c$ -- and thus $h$ through Eq. \eqref{eq:gridLocations} -- is increased. The moment that a grid point is removed (according to Eq. \eqref{eq:removePoint}), and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. This fact also applies to the other (including 2D) systems presented in this paper. In \cite{Willemsen2021a}, we propose a method of \textit{displacement correction} that adds an artificial spring force to the inner boundaries, locally adding loss and successfully preventing (visible) artefacts. Although negligibly influencing the frequency content, this correction does introduce unnatural losses to the system. Frequency dependent damping decreases large differences between the inner boundaries...
- 
-
 \section{DISCUSSION}\label{sec:discussion}
 As shown in Sec. \ref{sec:analysis}, modal frequencies exhibited by the dynamic grid deviate from those expected. However, the largest frequency deviations occur at higher-frequency ranges, which are less perceptually relevant, and will be ultimately experience high damping due to viscothermal effects. For the 1D systems presented in this paper, where a (quasi-)harmonic output is expected, these deviations could still cause beating effects, though listening tests will have to confirm this.
 
@@ -819,14 +817,12 @@ To implement FDTD schemes in matrix form in real-time using e.g. C++, they need 
 
 % Multiplying the average slope of the line that connects the (higher-frequency) minima of each deviation in Hz by the values of $\Nfrac^n$ that causes these minima, yields lines that are bounded by the samplerate...
 
-
-
 \section{CONCLUSION}\label{sec:conclusion}
 This paper presents the dynamic grid, a method to smoothly change grid configurations of FDTD schemes allowing for runtime parameter variation. Furthermore, the CFL-type conditions of these schemes can be satisfied with equality at all times, maximising simulation quality or bandwidth for any choice of parameters. We extend previous work on the time-varying 1D wave equation in \cite{Willemsen2021a} by applying the dynamic grid to the stiff string, the 2D wave equation and the thin plate. 
 % using FDTD schemes in matrix form and includi
 % By writing a FDTD scheme in matrix form and including the effect of the dynamic grid there, we have been able to extend previous work one can use matrix operations to build higher-order and higher-dimensional systems.
 %
-%Physical accuracy and stability conditions are not the main focus of this paper. Instead, efficiency and applicability to already existing models are more important for this contribution.
+Physical accuracy and stability conditions are not the main focus of this contribution, but rather the efficiency and applicability to already existing models.
 
 Future directions include the extension of the method presented here to 3D, performing another Kronecker sum as in Eq. \eqref{eq:dynamicKronecker} for the 3\textsuperscript{rd} dimension (see \cite{Hamilton2016}). Other future considerations include listening tests to confirm the absence of audible artefacts, as well as real-time implementation and control, such that a player can `mold' their instrument while performing, potentially discovering new ways of expression.
 
@@ -860,5 +856,6 @@ This  work  has  been  funded  in  part  by  the European Art-Science-Technology
 She is the President of the Sound and Music Computing (SMC) association, Project Leader of the Nordic SMC network and lead of the SMC Master at Aalborg University.
 Stefania received her PhD % entitled “The sound of friction: computer models, playability and musical applications” 
 from Stanford University in 2004. %, supervised by Professor Julius Smith III.
-Her research on sonic interaction design, sound for virtual and augmented reality with applications in health and culture can be found \href{https://tinyurl.com/35wjk3jn}{here}.}
+Her research on sonic interaction design, sound for virtual and augmented reality with applications in health and culture can be found \href{https://tinyurl.com/35wjk3jn}{here}.
+}
 \end{document}
