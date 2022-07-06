@@ -174,7 +174,7 @@ In order to ensure stability for the scheme in Eq. \eqref{eq:1dWaveDisc} the Cou
     \lambda \leq 1.
 \end{equation}
 %
-If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an exact solution to Eq. \eqref{eq:1DwaveCont} at the grid locations \cite{Bilbao2009}. In the case that $\lambda < 1$, numerical error is introduced, which decreases the quality of the simulation shown by a decrease in bandwidth and dispersive effects. It is important to note that the smaller $\lambda$ is, the lower the simulation quality.
+If $\lambda = 1$, Eq. \eqref{eq:1dWaveDisc} provides an approximation to Eq. \eqref{eq:1DwaveCont} with the highest possible simulation quality for this scheme \cite{Bilbao2009}. In the case that $\lambda < 1$, numerical error is introduced, which decreases the quality of the simulation shown by a decrease in bandwidth and dispersive effects. It is important to note that the smaller $\lambda$ is, the lower the simulation quality.
 
 Usually, Eq. \eqref{eq:CFL} is rewritten in terms of the grid spacing such that $h \geq c k$,
 which is implemented as
@@ -210,7 +210,8 @@ which have $\Mv+1$ grid points and $\Mw+1$ grid points respectively. (It is impo
 % \SBcomment[The subscripting gets 4 layers deep here...this is pretty heavy! Any way to simplify?] \SWcomment[Hmm.. possibly using a subscript $m$ for $w$ and keep $l$ for $v$. But in the 2D case we'll get a general indexing $l_i$ for the $i$\th subsystem...]\SBcomment[Seems to me you could write just $x_{l_{v}}$ rather than $x_{v_{l_{v}}}$] \SWcomment[Hmm.. when using a number it will become ambiguous which system it is. (Is $x_0^n$ the point where $l_v = 0$ or $l_w = 0$?)]\SBcomment[OK, I sort of see, but this is getting very very hard to follow for me!] \SWcomment[I get that.. Maybe a grid point as a function of $x^n$? So $x^n(v_\lv)$? That's also nasty... I'll think a little more about it.]
 % 
 % \SWcomment[What about $\mathfrak{X}^n(v_\lv)$ or some other ``special'' `$x$'-symbol?]
-See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, sub-audio rate parameter changes are assumed such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}} \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is implicitly used. 
+See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, sub-audio rate parameter changes are assumed such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}} \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$ as an approximation to $\ptt$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is implicitly used.
+
 \def\figwidth{0.99}
 \begin{figure}[t]
     \centering
@@ -324,7 +325,7 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
     \v^{n-1} &:= [v_1^{n-1}, \hdots, v_{M_v^{n-1}-1}^{n-1}]^T,
     \end{aligned} \quad \text{if } N^n < N^{n-1}.
 \end{equation}
-It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
+It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. Notice that although a proof of convergence of this method is left for future work, numerical experiments in Sec. \ref{sec:convergence} demonstrate convergence of the proposed method. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
 
 % \subsection{State Correction}\label{sec:stateCorrection}
 % At the moment that a point is removed, and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
@@ -535,13 +536,13 @@ where
 \end{align*}
 contain the states of the vertical inner boundaries and their first neighbours in the $x$-direction. 
 
-Only considering alterations in the top subsystems, a row can be added by carrying out the following operations on $\u_1$ and $\u_2$ in Eq. \eqref{eq:2DuDefs} 
+Only considering alterations in the top subsystems, a row can be added by carrying out the following operations on $\u_1$ and $\u_2$ (at $n$ and $n-1$) in Eq. \eqref{eq:2DuDefs} 
 \begin{equation*}
     \begin{aligned}
         \u_{1,l_1}^n &:= [(\u_{1,l_1}^n)^T, I_3^n \z_{1, l_1}^n]^T,\\
-        \u_{2,l_2}^n &:= [(\u_{2,l_2}^n)^T, I_3^n \z_{2, l_2}^n]^T,\\
-        \u_{1,l_1}^{n-1} &:= [(\u_{1,l_1}^{n-1})^T, I_3^n \z_{1, l_1}^{n-1}]^T,\\
-        \u_{2,l_2}^{n-1} &:= [(\u_{2,l_2}^{n-1})^T, I_3^n \z_{2, l_2}^{n-1}]^T,
+        \u_{2,l_2}^n &:= [(\u_{2,l_2}^n)^T, I_3^n \z_{2, l_2}^n]^T,%\\
+        % \u_{1,l_1}^{n-1} &:= [(\u_{1,l_1}^{n-1})^T, I_3^n \z_{1, l_1}^{n-1}]^T,\\
+        % \u_{2,l_2}^{n-1} &:= [(\u_{2,l_2}^{n-1})^T, I_3^n \z_{2, l_2}^{n-1}]^T,
     \end{aligned}\quad \text{if } N_y^n > N_y^{n-1},
 \end{equation*}
 % where the matrix containing the states of the horizontal inner boundaries and their neighbours is defined as
@@ -551,9 +552,9 @@ Only considering alterations in the top subsystems, a row can be added by carryi
 where 
 \begin{align*}
     \z_{1,l_1}^n &= [u_{1, l_1, M_{y,1}^{n-1}-1}^n, u_{1, l_1, M_{y,1}^{n-1}}^n, u_{3, l_1, 0}^n, u_{3, l_1, 1}^n]^T,\\
-    \z_{2,l_2}^n &= [u_{2, l_2, M_{y,2}^{n-1}-1}^n, u_{2, l_2, M_{y,2}^{n-1}}^n, u_{4, l_2, 0}^n, u_{4, l_2, 1}^n]^T,\\
-    \z_{1,l_1}^{n-1} &= [u_{1, l_1, M_{y,1}^{n-1}-1}^{n-1}, u_{1, l_1, M_{y,1}^{n-1}}^{n-1}, u_{3, l_1, 0}^{n-1}, u_{3, l_1, 1}^{n-1}]^T, \quad \text{and}\\
-    \z_{2,l_2}^{n-1} &= [u_{2, l_2, M_{y,2}^{n-1}-1}^{n-1}, u_{2, l_2, M_{y,2}^{n-1}}^{n-1}, u_{4, l_2, 0}^{n-1}, u_{4, l_2, 1}^{n-1}]^T,
+    \z_{2,l_2}^n &= [u_{2, l_2, M_{y,2}^{n-1}-1}^n, u_{2, l_2, M_{y,2}^{n-1}}^n, u_{4, l_2, 0}^n, u_{4, l_2, 1}^n]^T,%\\
+    % \z_{1,l_1}^{n-1} &= [u_{1, l_1, M_{y,1}^{n-1}-1}^{n-1}, u_{1, l_1, M_{y,1}^{n-1}}^{n-1}, u_{3, l_1, 0}^{n-1}, u_{3, l_1, 1}^{n-1}]^T, \quad \text{and}\\
+    % \z_{2,l_2}^{n-1} &= [u_{2, l_2, M_{y,2}^{n-1}-1}^{n-1}, u_{2, l_2, M_{y,2}^{n-1}}^{n-1}, u_{4, l_2, 0}^{n-1}, u_{4, l_2, 1}^{n-1}]^T,
 \end{align*}
 contain the horizontal inner boundaries and their first neighbours in the $y$-direction (the ranges for $l_1$ and $l_2$ are given in Eq. \eqref{eq:rangesLM}).
 
@@ -565,13 +566,13 @@ Removing grid points also happens in a similar fashion to the 1D case. Removing 
     \end{aligned}
 \ \ \text{if } N_x^n < N_x^{n-1},
 \end{equation}
-and removing a row from the system happens according to
+and removing a row from the system happens (at $n$ and $n-1$) according to
 \begin{equation}
     \begin{aligned}
         \u_{1,l_1}^n &:= [u_{1,l_1, 1}^n, \hdots, u_{1,l_1, M_{y,1}^{n-1}-1}^n]^T,\\
-        \u_{2,l_2}^n &:= [u_{2,l_2, 1}^n,\hdots, u^n_{2,l_2, M_{y, 1}^{n-1}-1}]^T,\\
-        \u_{1,l_1}^{n-1} &:= [u_{1,l_1, 1}^{n-1}, \hdots, u_{1,l_1, M_{y,1}^{n-1}-1}^{n-1}]^T,\\
-        \u_{2,l_2}^{n-1} &:= [u_{2,l_2, 1}^{n-1},\hdots, u^{n-1}_{2,l_2, M_{y, 1}^{n-1}-1}]^T,
+        \u_{2,l_2}^n &:= [u_{2,l_2, 1}^n,\hdots, u^n_{2,l_2, M_{y, 1}^{n-1}-1}]^T,%\\
+        % \u_{1,l_1}^{n-1} &:= [u_{1,l_1, 1}^{n-1}, \hdots, u_{1,l_1, M_{y,1}^{n-1}-1}^{n-1}]^T,\\
+        % \u_{2,l_2}^{n-1} &:= [u_{2,l_2, 1}^{n-1},\hdots, u^{n-1}_{2,l_2, M_{y, 1}^{n-1}-1}]^T,
     \end{aligned}\quad \text{if } N_y^n < N_y^{n-1}.
 \end{equation}
 % \subsubsection{State correction}
@@ -789,7 +790,7 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
 \end{table}
 \vspace{-1em}
 \subsection{System Behaviour}\label{sec:removingGridPoints}
-Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. If the system is excited at a later time, these modes will naturally be excited too.
+Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. %If the system is excited at a later time, these modes will naturally be excited too.
 % Furthermore, no noticeable artefacts occur when adding grid points (at sub-audio rate parameter variations). 
 
 If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, causing audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
@@ -798,20 +799,33 @@ In the case of 2D systems, if parameters are varied such that grid points need t
 
 For the lossless systems presented in this paper, local losses could be added at the inner boundaries, presented in \cite{Willemsen2021a, Willemsen2021b} as displacement / state correction. Although this successfully prevents noticeable artefacts, this method does introduce unnatural losses to the system.
 
+\subsection{Convergence}\label{sec:convergence}
+Although a full proof of convergence for the dynamic grid is left for future work, Figure \ref{fig:convergence} demonstrates converging behaviour. System \eqref{eq:splitFDS} is excited and the length is changed from $L = 1$ m to $L= 0.5$ m over the course of 0.1s (left panel), or vice versa (right panel) and ran at different sample rates. The reference signal is created by retrieving the output of running system \eqref{eq:splitFDS} at $\fs=30\cdot 44100$ Hz. Using a log-log plot to show the mean squared error (MSE), one can observe a quasi-linear decrease, indicating convergence with first-order accuracy in $k$. This result is confirmed by the fact that at higher sample rates, audible artefacts happen to a lesser degree.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{mseLogLogPaper2.eps}
+    \caption{MSE for system \eqref{eq:splitFDS} at different sample with a reference of $\fs = 30\cdot 44100$ Hz.
+    }
+    \label{fig:convergence}
+\end{figure}
+
 % \SWcomment[One can also see it in time-space domain.] Consider the dynamic 1D wave equation in Eq. \eqref{eq:splitFDS} where $c$ -- and thus $h$ through Eq. \eqref{eq:gridLocations} -- is increased. The moment that a grid point is removed (according to Eq. \eqref{eq:removePoint}), and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. This fact also applies to the other (including 2D) systems presented in this paper. In \cite{Willemsen2021a}, we propose a method of \textit{displacement correction} that adds an artificial spring force to the inner boundaries, locally adding loss and successfully preventing (visible) artefacts. Although negligibly influencing the frequency content, this correction does introduce unnatural losses to the system. Frequency dependent damping decreases large differences between the inner boundaries...
+\vspace{-1.8em}
+
 \section{DISCUSSION}\label{sec:discussion}
-As shown in Sec. \ref{sec:analysis}, modal frequencies exhibited by the dynamic grid deviate from those expected. However, the largest frequency deviations occur at higher-frequency ranges, which are less perceptually relevant, and will be ultimately experience high damping due to viscothermal effects. For the 1D systems presented in this paper, where a (quasi-)harmonic output is expected, these deviations could still cause beating effects, though listening tests will have to confirm this.
+\vspace{-0.4em}
+As shown in Sec. \ref{sec:analysis}, modal frequencies exhibited by the dynamic grid deviate from those expected. However, the largest frequency deviations occur at higher-frequency ranges, which are less perceptually relevant, and damped most quickly due to viscothermal effects. For the 1D systems presented in this paper, where a (quasi-)harmonic output is expected, these deviations could cause beating effects, though listening tests will have to confirm this.
 
-The fact that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited as shown in Fig. \ref{fig:outputStiffSTring} can be explained by the fact that if $\alpha^n = 0$, two grid points are perfectly overlapping and will act as one grid point due to the rigid connection in Eq. \eqref{eq:rigid}. 
+% The fact that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited as shown in Fig. \ref{fig:outputStiffSTring} can be explained by the fact that if $\alpha^n = 0$, two grid points are perfectly overlapping and will act as one grid point due to the rigid connection in Eq. \eqref{eq:rigid}. 
 
-It is obviously not ideal to rely on (frequency-dependent) losses for grid points to be removed without noticeable artefacts. However, it can be argued that relying on losses which are often used in existing models is more natural than adding artificial damping at specific locations in the grid, such as done in previous work \cite{Willemsen2021a, Willemsen2021b}. %Furthermore, high-frequency losses occur naturally in any physical material. 
+It is obviously not ideal to rely on (frequency-dependent) losses for grid points to be removed without noticeable artefacts. However, it can be argued that relying on losses which are often used in existing models is more natural than adding artificial damping at specific locations in the grid, such as done in previous work \cite{Willemsen2021a, Willemsen2021b}. Furthermore, convergence of the method, although not proven, has been demonstrated in Sec. \ref{sec:convergence} and shows that at higher sample rates -- though less suited for real-time applications -- audible artefacts happen to a lesser degree. %Furthermore, high-frequency losses occur naturally in any physical material. 
 
 % If a grid point, and thus a mode is removed from the system, its energy will not be. All other modes will gain energy from the removed mode, which results in audible artefacts. In the 1D case, as the highest-frequency mode is the one that gets removed, the frequency-dependent damping takes care of this. \SWcomment[In the 2D case, the modes that are removed are not necessarily the highest frequency, and might not be damped before a row/column is removed.] Listening tests will have to confirm the absence of artefacts.
 
 
 % The thin plate can be easily extended to the stiff membrane, which combines the 2D wave equation with the thin plate.
 
-To implement FDTD schemes in matrix form in real-time using e.g. C++, they need to be rewritten to update equations. The updates at the inner boundaries for the 1D and 2D wave equations can be directly implemented using the definitions in Eqs. \eqref{eq:connectionInterpol} and \eqref{eq:connectionInterpol2D} respectively. For the schemes including a 4\textsuperscript{th}-order spatial derivative, one can retrieve the coefficients by performing the matrix multiplications presented in Eqs. \eqref{eq:4thOrder1D} and \eqref{eq:4thOrder2D} for the stiff string and thin plate respectively. 
+% To implement FDTD schemes in matrix form in real-time using e.g. C++, they need to be rewritten to update equations. The updates at the inner boundaries for the 1D and 2D wave equations can be directly implemented using the definitions in Eqs. \eqref{eq:connectionInterpol} and \eqref{eq:connectionInterpol2D} respectively. For the schemes including a 4\textsuperscript{th}-order spatial derivative, one can retrieve the coefficients by performing the matrix multiplications presented in Eqs. \eqref{eq:4thOrder1D} and \eqref{eq:4thOrder2D} for the stiff string and thin plate respectively. 
 
 % Notes:
 
@@ -822,12 +836,13 @@ This paper presents the dynamic grid, a method to smoothly change grid configura
 % using FDTD schemes in matrix form and includi
 % By writing a FDTD scheme in matrix form and including the effect of the dynamic grid there, we have been able to extend previous work one can use matrix operations to build higher-order and higher-dimensional systems.
 %
-Physical accuracy and stability conditions are not the main focus of this contribution, but rather the efficiency and applicability to already existing models.
+% Physical accuracy and stability conditions are not the main focus of this contribution, but rather the efficiency and applicability to existing models.
 
-Future directions include the extension of the method presented here to 3D, performing another Kronecker sum as in Eq. \eqref{eq:dynamicKronecker} for the 3\textsuperscript{rd} dimension (see \cite{Hamilton2016}). Other future considerations include listening tests to confirm the absence of audible artefacts, as well as real-time implementation and control, such that a player can `mold' their instrument while performing, potentially discovering new ways of expression.
-
+Future directions include the extension of the method presented here to 3D, performing another Kronecker sum as in Eq. \eqref{eq:dynamicKronecker} for the 3\textsuperscript{rd} dimension (see \cite{Hamilton2016}). Other future considerations include listening tests to confirm the absence of audible artefacts, as well as real-time implementation and control, such that a player can `mold' their instrument while performing, potentially discovering new ways of expression. Finally, a full proof of convergence of the method needs to be established. 
+\vspace{-0.5em}
 \section{ACKNOWLEDGMENTS}
 This  work  has  been  funded  in  part  by  the European Art-Science-Technology Network for Digital Creativity (EASTN-DC), project number 883023 and the Nordic Sound and Music Computing Network by Nordforsk. This work is also funded in part by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme, Grant agreement No. 950084-StG-NEMUS. Thanks to the DAFx20in21 committee for providing the open access publication of this work.
+\vspace{-0.5em}
 
 \bibliography{jaes.bib}
 \bibliographystyle{jaes.bst}
