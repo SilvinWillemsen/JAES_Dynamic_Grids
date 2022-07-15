@@ -52,8 +52,7 @@
 
 %Abstract
 \abstract{% 
-Several well-established approaches to physical modelling synthesis for musical instruments exist. Finite-difference time-domain (FDTD) methods are known for their generality and flexibility in terms of the systems one can model, but less flexible with regard to smooth parameter variations due to their reliance on a static grid. This paper presents the dynamic grid, a method to smoothly change grid configurations of FDTD schemes based on sub-audio rate time variation of parameters. This allows for extensions of the behaviour of physical models beyond the physically possible, broadening the range of expressive possibilities for the musician. The method is applied to the 1D wave equation and the stiff string, as well as to 2D systems, including the 2D wave equation and the thin plate. Results show that the method does not introduce noticeable artefacts when changing between grid configurations for systems including loss. %Some insights into stability analysis and real-time implementation are provided. 
-% Future work includes stability analysis and real-time implementation and control.\SBcomment[Can't refer to future work in the abstract. Better to frame in terms of "some insights into...are provided."]
+Several well-established approaches to physical modelling synthesis for musical instruments exist. Finite-difference time-domain (FDTD) methods are known for their generality and flexibility in terms of the systems one can model, but less flexible with regard to smooth parameter variations due to their reliance on a static grid. This paper presents the dynamic grid, a method to smoothly change grid configurations of FDTD schemes based on sub-audio rate time variation of parameters. This allows for extensions of the behaviour of physical models beyond the physically possible, broadening the range of expressive possibilities for the musician. The method is applied to the 1D wave equation and the stiff string, as well as to 2D systems, including the 2D wave equation and the thin plate. Results show that the method does not introduce noticeable artefacts when changing between grid configurations for systems including loss.
 }
 \maketitle
 %Head 1
@@ -81,14 +80,9 @@ A useful starting point for illustrating the dynamic grid is the 1D wave equatio
     \ptt q = c^2 \pxx q.
 \end{equation}
 Here, $c$ is the wave speed (in m/s), and derivatives with respect to $t$ and $x$ are denoted by $\pt$ and $\px$ respectively. In Eq. \eqref{eq:1DwaveCont}, $q$ can be interpreted as the transverse displacement of an ideal string, or the acoustic pressure in a cylindrical tube. A basic choice of boundary condition is the Dirichlet condition, which can be interpreted as a `fixed' termination for the ideal string, or an `open' condition for the acoustic tube. The Dirichlet boundary condition is defined as
-\begin{equation}%\label{eq:contBoundaryConditions}
-% \begin{alignat}{2}
+\begin{equation}
     q(0, t) = q(L, t) = 0.\label{eq:contDirichlet}
-    %\\
-    % \px q(0, t) &= \px q(L,t) = 0 \ \ &&\text{(Neumann)},\label{eq:contNeumann}
-% \end{alignat}
 \end{equation}
-%The Neumann condition will not be used in this paper and is thus excluded for brevity. 
 \subsection{Numerical Methods}\label{sec:numericalMethods}
 To discretise Eq. \eqref{eq:1DwaveCont} using FDTD methods, a spatio-temporal grid needs to be defined first. 
 Time $t\geq 0$ can be discretised as $t = nk$ with temporal index $n = 0, 1, 2, \hdots$ and time-step $k = 1/f_\text{s}$ (in s) with sample rate $f_\text{s}$ (in Hz). Space $x = [0, L]$ is subdivided into $N$ equal intervals of length $h$ (in m) -- also called the grid spacing -- according to $x = lh$ with spatial index $l\in \{0, \hdots, N\}$. 
@@ -119,15 +113,6 @@ From Eq. \eqref{eq:1DwaveUpdate} the update at the domain endpoints ($l=0$, and 
     q_0^n = q_N^n = 0.
 \end{equation}
 In practice, the computational domain is reduced to $l=\{1, \hdots, N-1\}$. 
-%the necessity of calculating Eq. \eqref{eq:1DwaveUpdate} at the boundaries.
-% \eqref{eq:contBoundaryConditions} as follows:
-% \begin{subequations}\label{eq:discBoundaryConditions}
-% \begin{alignat}{2}
-%     q_0^n &= q_N^n = 0 &&\text{(Dirichlet)},\label{eq:discDirichlet}\\
-%     \dxd q_0^n &= \dxd q_N^n = 0 \ \ &&\text{(Neumann)}.\label{eq:discNeumann}
-% \end{alignat}
-% \end{subequations}
-% If Dirichlet boundary conditions are used, the range of calculation simply becomes $l=\{1, \hdots, N-1\}$. In this work, only Dirichlet boundaries will be considered. \SBcomment[Hey, if you're only using Dirichlet, better to remove the Neumann conditions completely here...otherwise it just gets confusing!] \SWcomment[So also excluding it from the continuous section?]\SBcomment[Yes...you could mention it in text though.]
 
 \subsection{Matrix Form}\label{sec:matrixFormOrig}
 Both for compact implementation of FDTD schemes as well as for the application of the dynamic grid to more complex systems later on, it is useful to write an update equation (such as Eq. \eqref{eq:1DwaveUpdate}) in matrix form. The general matrix form of an update equation is defined as
@@ -145,16 +130,6 @@ Using Dirichlet boundary conditions, the state $\qln$ in Sec. \ref{sec:numerical
 % \end{equation}
 % where $\B$
 where $(N-1)\times(N-1)$ matrix
-% \begin{equation}\label{eq:dxxMat}
-%     \Dxx =
-%     \begin{bmatrix}
-%         \ddots & \ddots & & &\mathbf{0}\\
-%         \ddots & \!\!\!\!$-2$ & 1 & & \\
-%         & 1 & \!\!\!\!$-2$ & 1 & \\
-%         & & 1 & \!\!\!\!$-2$ & \ddots \\
-%         \mathbf{0}& & & \ddots & \ddots 
-%     \end{bmatrix},
-% \end{equation}
 \begin{equation}\label{eq:dxxMat}
     \Dxx = \xbracketMatrixstack{
         \ddots & \ddots & & &\mathbf{0}\\
@@ -165,8 +140,6 @@ where $(N-1)\times(N-1)$ matrix
     },
 \end{equation}
 and $\I_{N-1}$ is the identity matrix of the same size. 
-%\SBcomment[Can be slightly cleaner to define ${\mathbf D}_{xx}$ as a "scaled" Laplacian, so without the factor of $1/h^2$. Then you just have $\lambda$ in your update!] \SWcomment[True! But should it then be $\lambda^n$? Because a change in $c^n$ cancels out a change in $h^n$ here. If I do the same for the stiff string, it definitely needs to be $\lambda^n$ and $\mu^n$ as $\kappa^n$ and $c^n$ can be set independently.]
-
 
 \subsection{Stability and Simulation Quality}\label{sec:quality}
 In order to ensure stability for the scheme in Eq. \eqref{eq:1dWaveDisc} the Courant number in Eq. \eqref{eq:courant} needs to satisfy the CFL condition \cite{Courant1928}:
@@ -187,9 +160,6 @@ This ensures that $\lambda$ is as close to $1$ as possible while still satisfyin
 As stated in Sec. \ref{sec:introduction}, the goal of this work is to introduce time-varying parameters into FDTD-based simulations. In audio applications, the sample rate $f_\text{s}$, and thus the time step $k$, are rarely varied \cite{Bilbao2009}, and are therefore assumed fixed in this work. One can therefore observe from the 1D wave equation in Eq. \eqref{eq:1DwaveCont}, that the wave speed $c$ and system length $L$ are the only parameters that can be made time-varying; the other variables, such as $h$, $\lambda$ and $N$ are derived from these physical parameters. 
 
 Parameter changes cause several computational issues to emerge. 
-%
-% \SBcomment[OK, this maybe needs more explanation. As in, you should say that you are holding $k$ and $L$ fixed.] \SWcomment[Added static $k$ above. $L$ can still change as will be done in the 2D case.] \SBcomment[Also, you're working implicitly from the assumption that $\lambda = 1$ to start with. But you don't need to do this...might be better to introduce $\lambda$ through an initial $h = ck/\lambda$.] \SWcomment[Hmm.. not sure how to write this. Should I say that we can now set $\lambda$ freely (not calculating it from existing parameters) as long as it satisfies Eq. \eqref{eq:CFL}?]\SBcomment[Can't you just write $h=ck/\lambda$ in Eq. 12?] \SWcomment[I suppose so, but I do refer back to \eqref{eq:orderOfCalc} quite a bit in the explanation. I think it's important to show that the fractional $\Nfrac$ removes the flooring operation in \eqref{eq:orderOfCalc}, so it's better to write it out like this I think. Besides, $L$ is not necessarily fixed, so then $h=ck/\lambda$ would not be correct. In any case please tell me if you think differently!]\SBcomment[OK, here, not sure I get it. $h = ck/\lambda$ is just a definition isn't it? Like it always has to be correct, right?] \SWcomment[I suppose it depends on how you calculate $\lambda$. If it is defined as the usual $\lambda = ck/h$, the calculation $h=ck/\lambda$ will not include the length (it will simply boil down to $h=h$). To have $L$ included, $\lambda$ will have to be defined as $\lambda=(ck/L) \lfloor L / ck\rfloor$ I believe.]\SBcomment[The problem is in moving from Eq. 11 (general $\lambda$) to Eq. 12, where you're already implicitly setting $\lambda=1$ to start with. Which is it? In that case, you're still in the non-dynamic setting.] \SWcomment[Eq. \eqref{eq:orderOfCalc} is indeed still the non-dynamic setting, and $\lambda$ is not set to be 1 there due to the flooring operation and recalculation of $h$ (Eqs. \eqref{eq:stabilityCond} and \eqref{eq:orderOfCalc} are essentially saying the same thing: the usual non-dynamic case). Only at the end of the current paragraph (right above Sec. 2.1) I start saying that $\lambda$ can be 1 at all times if the flooring operation is removed due to the fractional $\Nfrac$. Does that clarify things, or am I missing something?]\SBcomment[I mean: in the first thing in Eq. 12 is h = ck---meaning that you are starting from the assumption that $\lambda = 1$ there. I realise that you end up a little bit away from this after truncation. But actually, this doesn't match up with what is in Eq. 11, where you have just a general $\lambda$, possibly set well away from 1. Like there's an extra condition in Eq. 12 beyond Eq. 11.  ] \SWcomment[Right, I think we're getting closer.. How about I put Eq. (11) in-text, and elaborate on the fact that Eq. (12) starts off with this condition satisfied with equality to eventually yield the highest simulation quality? I just think writing $h = ck/\lambda$ is a bit counter-intuitive as $\lambda$ is calculated from $h$ not vice-versa.]\SBcomment[This isn't really true. You can set $\lambda$ to be whatever you want, and then set $h$ from it (and sometimes, for nonlinear problems, we do this!). They're on an equal footing really. But I'm not sure this is so important here...] \SWcomment[Ahh right! That makes sense.. Yeah I think this got a bit out of hand haha.. I'll just try to do what I think is least confusing, and then we can start another discussion ;)] 
-%
 First, a change in the wave speed $c$ will alter $\lambda$ through Eq. \eqref{eq:orderOfCalc}, which causes issues regarding stability and simulation quality as detailed in Sec. \ref{sec:quality}. Secondly, and more importantly, changing $c$ (or $L$) changes the number of intervals $N$ according to Eq. \eqref{eq:orderOfCalc} and thus the number of grid points describing the state of the system. Apart from \textit{how} and \textit{where} to add or remove grid points based on the now-dynamic wave speed, this needs to happen smoothly in order to prevent audible artefacts. %Note that for the 1D wave equation it does not matter for the system behaviour whether $c$ or $L$ is changed as these are inversely proportional in terms of the fundamental frequency exhibited by the system \cite{Willemsen2021a}.\footnote{In the trombone simulation in \cite{Willemsen2021b}, there is a difference between a change in $c$ and $L$ due to the spatially varying geometry.}
 
 This work proposes a nonuniform grid with a \textit{fractional} number of intervals $\Nfrac = L / h$ such that $N = \floor[\Nfrac]$. This removes the need for the flooring operation in Eq. \eqref{eq:orderOfCalc} (and therefore the recalculation of $h$), and allows $\lambda = 1$ at all times. Furthermore, $\Nfrac$ potentially allows for smooth transitions between grid configurations. 
@@ -207,9 +177,6 @@ which have $\Mv+1$ grid points and $\Mw+1$ grid points respectively. (It is impo
 \begin{equation}\label{eq:gridLocations}
     x_{v_\lv}^n =\lv h^n, \quad x_{w_\lw}^n = L^n-(\Mw-\lw)h^n.
 \end{equation}
-% \SBcomment[The subscripting gets 4 layers deep here...this is pretty heavy! Any way to simplify?] \SWcomment[Hmm.. possibly using a subscript $m$ for $w$ and keep $l$ for $v$. But in the 2D case we'll get a general indexing $l_i$ for the $i$\th subsystem...]\SBcomment[Seems to me you could write just $x_{l_{v}}$ rather than $x_{v_{l_{v}}}$] \SWcomment[Hmm.. when using a number it will become ambiguous which system it is. (Is $x_0^n$ the point where $l_v = 0$ or $l_w = 0$?)]\SBcomment[OK, I sort of see, but this is getting very very hard to follow for me!] \SWcomment[I get that.. Maybe a grid point as a function of $x^n$? So $x^n(v_\lv)$? That's also nasty... I'll think a little more about it.]
-% 
-% \SWcomment[What about $\mathfrak{X}^n(v_\lv)$ or some other ``special'' `$x$'-symbol?]
 See Figure \ref{fig:twoFreeStrings}. Notice that although the grid points are allowed to move, sub-audio rate parameter changes are assumed such that $x^{n+1}_{v_{l_v}} \approx x^{n}_{v_{l_v}} \approx x^{n-1}_{v_{l_v}}$ and $x^{n+1}_{w_{l_w}} \approx x^{n}_{w_{l_w}}  \approx x^{n-1}_{w_{l_w}}$ which allows $\dtt$ in \eqref{eq:splitFDS} to still be applied to $v_\lv^n$ and $w_\lw^n$ as an approximation to $\ptt$. To transfer the state of a grid point to its next location, $0$\thOrder interpolation (or rounding) is implicitly used.
 
 \def\figwidth{0.99}
@@ -228,15 +195,13 @@ The grid locations $\lv = \Mv$ and $\lw = 0$  are referred to as the \textit{inn
     v_{\Mv}^n = w_0^n, \quad \text{if}\  x_{v_{\Mv}}^n =  x_{w_0}^n,
 \end{equation}
 This acts as a continuity constraint at the inner boundaries. As shown in
-\cite{Willemsen2021a}, setting 
-%combining this condition with Neumann boundary conditions \SBcomment[OK, here I guess we do need the Neumann conditions...still not clear to me why though. Like, is this condition in addition to the Dirichlet condition? This seems weird to me---you can't normally specify two conditions at an endpoint (think of the end of a string---you can't have both Dirichlet and Neumann satisfied, otherwise the solution is just zero)] \SWcomment[Alright, I plan to avoid the Neumann comment to avoid confusion, but just to clarify: the subsystems initially have Dirichlet outer boundaries and Neumann inner boundaries (so the system shown in Fig. \ref{fig:twoFreeStrings} is essentially ``free" in the center). When adding the rigid connection (which is not a boundary condition) to the inner boundaries when these are perfectly overlapping, the definition of the virtual grid points reduces to Eq. \eqref{eq:perfectOverlap} (see \cite{Willemsen2021a} (Sec. 4.1.1) for the derivation), and the system \eqref{eq:splitFDS} exhibits identical behaviour to the original system in Eq. \eqref{eq:1dWaveDisc}. This is purely used as a starting point! When the inner boundaries do not overlap, the Neumann + rigid connection does not hold, and we resort to the alternative definition for the virtual grid points in Eq. \eqref{eq:connectionInterpol}.] imposed on the inner boundaries shows that
-the virtual grid points needed to calculate $v_{\Mv}^n$ and $w_0^n$ according to
+\cite{Willemsen2021a}, setting the virtual grid points needed to calculate $v_{\Mv}^n$ and $w_0^n$ according to
 \begin{equation}\label{eq:perfectOverlap}
     v_{\Mv+1}^n = w_1^n \qaq w_{-1}^n = v_{\Mv-1}^n,
 \end{equation}
 causes Eq. \eqref{eq:splitFDS} to exhibit identical behaviour to the original system in Eq. \eqref{eq:1dWaveDisc}.
 
-Consider a decrease in wave speed $c^n$, which yields a decrease in $h^n$. This causes all grid points to move towards their respective outer boundary according to Eq. \eqref{eq:gridLocations} (see Figure \ref{fig:twoFreeStringsGridMove}). As the inner boundaries no longer overlap, i.e., $\Nfrac^n \neq N^n$, Eq. \eqref{eq:perfectOverlap} can no longer be used and alternative definitions for the virtual grid points need to be found. To this end, quadratic %\SBcomment[Quadratic: is this correct? Like it is a three-point interpolant? This is kind of odd, as normally you interpolate using an even number of points (so linear, cubic, etc. But it might be correct!)] \SWcomment[Yes, indeed! This is why it initially took so long to get nice behaviour for the modes, because I was only looking at odd-ordered interpolants. See \cite{Willemsen2021Thesis} (Sec. 12.3) for a comparison.] 
+Consider a decrease in wave speed $c^n$, which yields a decrease in $h^n$. This causes all grid points to move towards their respective outer boundary according to Eq. \eqref{eq:gridLocations} (see Figure \ref{fig:twoFreeStringsGridMove}). As the inner boundaries no longer overlap, i.e., $\Nfrac^n \neq N^n$, Eq. \eqref{eq:perfectOverlap} can no longer be used and alternative definitions for the virtual grid points need to be found. To this end, quadratic
 Lagrange interpolation can be used:
 \begin{subequations}\label{eq:connectionInterpol}
     \begin{align}
@@ -260,14 +225,13 @@ Similar to Sec. \ref{sec:matrixFormOrig}, one can define a general update equati
 \begin{equation}\label{eq:generalDynGridMatrix}
     \AA \uStack^{n+1} = \BB \uStack^n + \CC \uStack^{n-1},
 \end{equation}
-where the definitions of $\AA$, $\BB$ and $\CC$ depend on the system at hand. %\SWcomment[Notice that the script style is used for the matrices and the state vector to indicate that this is a dynamic scheme.] 
+where the definitions of $\AA$, $\BB$ and $\CC$ depend on the system at hand.
 Furthermore, $\MoneD \times 1$ vector
 \begin{equation}\label{eq:uStack}
     \uStack^n = \begin{bmatrix}
     (\v^n)^T, (\w^n)^T
     \end{bmatrix}^T,
 \end{equation}
-% \SBcomment[Might possibly be better to choose a new letter (like v) for the combined vector, so as to avoid confusion with the earlier definition of u.] \SWcomment[I want to move towards a general definition that I can use for the 2D case as well. I also use $\v$ there for the building the stacked column vector in \eqref{eq:stacked2D}, but then again, there are a lot of overlaps with the symbols used in the 1D and 2D case. Hope that that's ok, and I don't have to come up with new ones.. haha. Could possibly add subscripts 1 and 2 to indicate whether it's 1D or 2D.] \SBcomment[Also: why are these vectors/matrices in script style? I mean, they're still just vectors and matrices, right?] \SWcomment[The script style was because it possibly better shows that these are related to a dynamic scheme rather than a static one (though I should probably elaborate on that for clarity).. Do script style symbols usually have a special meaning? ] \SBcomment[No, no special meaning, but it's extra notational baggage to carry around...]
 with $\MoneD = \Mv + \Mw$, includes the state of the subsystems in Eq. \eqref{eq:splitFDS}. Here, $\v^n = [v_1^n, v_2^n, \hdots, v_{\Mv}^n]^T$ and $\w^n = [w_0^n, w_1^n, \hdots, w_{\Mw-1}^n]^T$ which are $\Mv \times 1$ and $\Mw \times 1$ respectively. 
 The 1D wave equation including the dynamic grid can then be written in matrix form as Eq. \eqref{eq:generalDynGridMatrix} with
 \begin{equation}\label{eq:1DwaveDynMatrix}
@@ -276,9 +240,6 @@ The 1D wave equation including the dynamic grid can then be written in matrix fo
 \text{and} \quad\CC = -\I_{\MoneD},
 \end{gathered}
 \end{equation}
-% \begin{equation}\label{eq:1DwaveDynMatrix}
-%     \uStack^{n+1} = \left(2\I_\MoneD + (\lambda^n)^2\DDxx\right)\uStack^n - \uStack^{n-1} 
-% \end{equation}
 where $\lambda^n = c^nk/h^n$ (which can always be set to 1 in the case of the 1D wave equation, yielding optimal simulation quality at all times), and $\DDxx$ is an adapted version of $\Dxx$ in Eq. \eqref{eq:dxxMat} to include the quadratic interpolation presented in Eq. \eqref{eq:connectionInterpol}:
 \begin{equation}\label{eq:magicMatrix}
     \!\!\!\!\!\!\DDxx = \begin{bmatrix}[cccc|cccc]
@@ -301,7 +262,6 @@ If $c^n$ is decreased such that $N^n > N^{n-1}$, a grid point is added to the sy
     \v^{n-1} &:= [(\v^{n-1})^T, I_3^n\z^{n-1}]^T,\\
 \end{aligned} \quad \text{if } N^n > N^{n-1},
 \end{equation}
-%\SBcomment[OK, this is getting kind of hard to follow. In (24) above, you have $v^{n}$ defined in terms of $v^{n}$...like, are you resetting $v^{n}$?] \SWcomment[I see how this is confusing. I'm simply appending the state vector $\v^n$ with the new grid point. Maybe I should use $:=$, to indicate that it's more an operation rather than an equality?] \SBcomment[Also: I'm a little confused...before you were talking about quadratic interpolation, but now we're using cubic?] \SWcomment[Yes! For the state of the newly added grid point I use cubic interpolation.] 
 where
 \begin{equation*}
     \begin{aligned}
@@ -327,49 +287,7 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
 \end{equation}
 It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. 
 
-Notice that although a proof of convergence of the proposed method is left for future work, numerical experiments in Sec. \ref{sec:convergence} demonstrate convergence. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
-
-% \subsection{State Correction}\label{sec:stateCorrection}
-% At the moment that a point is removed, and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
-% \begin{align*}
-%     \dtt v_\lv^n = (c^n)^2\dxx v_\lv^n+ J_u(x_{v_{\Mv}}^n)
-%     F_\text{c}^n,\\
-%     \dtt w_\lw^n = (c^n)^2\dxx w_\lw^n - J_w(x_{w_0}^n)
-%     F_\text{c}^n,
-% \end{align*}
-% where
-% \begin{equation}\label{eq:spreadingOperators}
-%     \begin{aligned}
-%     J_u(x_i^n)& =
-%     \begin{cases}
-%         \frac{1}{h^n}, & \lv = \lfloor x_i^n/h^n\rfloor\\
-%         0,& \text{otherwise}
-%     \end{cases}
-%     \quad\text{and}\\
-%     J_w(x_i^n) &=
-%     \begin{cases}
-%         \frac{1}{h^n}, & \lw = \lfloor x_i^n/h^n \rfloor - \Mv\\
-%         0,& \text{otherwise}
-%     \end{cases}
-% \end{aligned}
-% \end{equation}
-% apply the correction force to the inner boundaries. 
-% Defining centred averaging and difference operators as
-% \begin{subequations}\label{eq:centredOperators}
-% \begin{align}\label{eq:centredAverage}
-%     \mu_{t\cdot}q_l^n &= \frac{1}{2} \left(q_l^{n+1} + q_l^{n-1}\right),\\
-%     \delta_{t\cdot}q_l^n &= \frac{1}{2k} \left(q_l^{n+1} - q_l^{n-1}\right),
-% \end{align}
-% \end{subequations}
-% the effect of the artificial spring can be defined as
-% \begin{equation}\label{eq:dispCorrForce}
-%     F_\text{c}^n = \beta^n \left(\mu_{t\cdot}\eta^n +\sigma_\text{sc}\delta_{t\cdot}\eta^n \right),
-% \end{equation}
-% with damping coefficient $\sigma_\text{sc}$ and
-% \begin{equation}\label{eq:betaDef}
-%     \beta^n = \beta(\alpha^n) = \frac{1-\alpha^n}{\alpha^n}.
-% \end{equation}
-% Note that Eq. \eqref{eq:betaDef} is still defined for $\alpha^n = 0$ when solving for the connection force and acts as a rigid connection. See \cite[Ch. 12]{Willemsen2021Thesis} for a derivation. It is also important to note that despite the appearance of future grid values in Eq. \eqref{eq:centredOperators}, the correction force can be calculated explicitly. 
+Notice that although a proof of convergence of the proposed method is left for future work, numerical experiments in Sec. \ref{sec:convergence} demonstrate convergence.
 
 \section{DAMPED STIFF STRING}\label{sec:stiffString}
 Using the matrix in Eq. \eqref{eq:magicMatrix} as a starting point, one can extend the dynamic grid method to more complex systems. A commonly used 1D model is the damped stiff string (see e.g. \cite{Willemsen2019}) which is described by the following partial differential equation (PDE) \cite{Bensa2003}:
@@ -397,10 +315,6 @@ Equation \eqref{eq:stiffStringFDS} can be written in matrix form using Eq. \eqre
     \C &= -(1 - \sigma_0k)\I_{N-1} - \frac{2\sigma_1k}{h^2}\Dxx,
 \end{aligned}
 \end{equation}
-% and writing this scheme in matrix form yields
-% \begin{equation}\label{eq:stiffStringDynMatrix}
-%     \q^{n+1} = \left(2\I_{N-1} + \lambda^2 \Dxx - \mu^2 \Dxxxx\right)\q^{n} - \q^{n-1},
-% \end{equation}
 where $\mu = \kappa k/h^2$, and (for simply supported boundary conditions)
 \begin{equation}\label{eq:DxxxxMat}
     \Dxxxx = \Dxx\Dxx,
@@ -433,15 +347,13 @@ Higher-dimensional systems can be written in matrix form by stacking or `flatten
         \qq_l^n &= [q_{l, 1}^n, \hdots, q_{l, N_y-1}^n ]^T.
     \end{aligned}
 \end{equation}
-% The rest of this section starts by extending the dynamic grid to 2D after which it will be applied to the 2D wave equation and the thin plate. 
 
 \subsection{2D Dynamic Grid}
 Rather than splitting the original system into two subsystems, one can split it into four. Consider grid function $u_{i, l_i, m_i}^n$, where $i\in\{1, \hdots, 4\}$ is the index of the subsystem (also see Figure \ref{fig:2DGrid}). 
 \begin{figure}[b]
     \centering
     \includegraphics[width=\columnwidth]{2DDynamicGrid.pdf}
-    \caption{Applying the dynamic grid to a 2D system. Virtual grid points are denoted as smaller circles and boundary points are not included in the calculation (for Dirichlet / simply supported boundary conditions). 
-    %Indices along the $x$-direction increment from left to right, and those along the $y$-direction from top to bottom.
+    \caption{Applying the dynamic grid to a 2D system. Virtual grid points are denoted as smaller circles and boundary points are not included in the calculation (for Dirichlet / simply supported boundary conditions).
     }
     \label{fig:2DGrid}
 \end{figure}
@@ -454,7 +366,7 @@ Subsystems placed next to each other in the $x$-direction need to have the same 
 \end{equation*}
 Furthermore, $0<M_{x,1}^n<N_x^n$ and $M_{x,2}^n = N_x^n-M_{x,1}^n$, and $0<M_{y,1}^n<N_y^n$ and $M_{y,3}^n = N_y^n-M_{y,1}^n$.
 
-The grid points of each of the subsystems are positioned in the $x$-$y$-plane as follows:%, such that the systems in order are top-left, top-right, bottom-left, bottom-right:  
+The grid points of each of the subsystems are positioned in the $x$-$y$-plane as follows:  
 \begin{subequations}
     \begin{align}
         &\!\!\!\left(x_{u_{1, l_1, m_1}}^n, y_{u_{1, l_1, m_1}}^n\right) = \left(l_1h^n, m_1h^n\right),\\
@@ -542,21 +454,13 @@ Only considering alterations in the top subsystems, a row can be added by carryi
 \begin{equation*}
     \begin{aligned}
         \u_{1,l_1}^n &:= [(\u_{1,l_1}^n)^T, I_3^n \z_{1, l_1}^n]^T,\\
-        \u_{2,l_2}^n &:= [(\u_{2,l_2}^n)^T, I_3^n \z_{2, l_2}^n]^T,%\\
-        % \u_{1,l_1}^{n-1} &:= [(\u_{1,l_1}^{n-1})^T, I_3^n \z_{1, l_1}^{n-1}]^T,\\
-        % \u_{2,l_2}^{n-1} &:= [(\u_{2,l_2}^{n-1})^T, I_3^n \z_{2, l_2}^{n-1}]^T,
+        \u_{2,l_2}^n &:= [(\u_{2,l_2}^n)^T, I_3^n \z_{2, l_2}^n]^T,
     \end{aligned}\quad \text{if } N_y^n > N_y^{n-1},
 \end{equation*}
-% where the matrix containing the states of the horizontal inner boundaries and their neighbours is defined as
-% \begin{equation*}
-%     \Z^n = [\z_{1, 1}^n, \hdots, \z_{1, M_{x,1}^{n-1}}^n, \z_{2, 0}^n, \hdots, \z_{M_{x,2}^{n-1}-1}^n],
-% \end{equation*}
 where 
 \begin{align*}
     \z_{1,l_1}^n &= [u_{1, l_1, M_{y,1}^{n-1}-1}^n, u_{1, l_1, M_{y,1}^{n-1}}^n, u_{3, l_1, 0}^n, u_{3, l_1, 1}^n]^T,\\
-    \z_{2,l_2}^n &= [u_{2, l_2, M_{y,2}^{n-1}-1}^n, u_{2, l_2, M_{y,2}^{n-1}}^n, u_{4, l_2, 0}^n, u_{4, l_2, 1}^n]^T,%\\
-    % \z_{1,l_1}^{n-1} &= [u_{1, l_1, M_{y,1}^{n-1}-1}^{n-1}, u_{1, l_1, M_{y,1}^{n-1}}^{n-1}, u_{3, l_1, 0}^{n-1}, u_{3, l_1, 1}^{n-1}]^T, \quad \text{and}\\
-    % \z_{2,l_2}^{n-1} &= [u_{2, l_2, M_{y,2}^{n-1}-1}^{n-1}, u_{2, l_2, M_{y,2}^{n-1}}^{n-1}, u_{4, l_2, 0}^{n-1}, u_{4, l_2, 1}^{n-1}]^T,
+    \z_{2,l_2}^n &= [u_{2, l_2, M_{y,2}^{n-1}-1}^n, u_{2, l_2, M_{y,2}^{n-1}}^n, u_{4, l_2, 0}^n, u_{4, l_2, 1}^n]^T,
 \end{align*}
 contain the horizontal inner boundaries and their first neighbours in the $y$-direction (the ranges for $l_1$ and $l_2$ are given in Eq. \eqref{eq:rangesLM}).
 
@@ -572,13 +476,9 @@ and removing a row from the system happens (at $n$ and $n-1$) according to
 \begin{equation}
     \begin{aligned}
         \u_{1,l_1}^n &:= [u_{1,l_1, 1}^n, \hdots, u_{1,l_1, M_{y,1}^{n-1}-1}^n]^T,\\
-        \u_{2,l_2}^n &:= [u_{2,l_2, 1}^n,\hdots, u^n_{2,l_2, M_{y, 1}^{n-1}-1}]^T,%\\
-        % \u_{1,l_1}^{n-1} &:= [u_{1,l_1, 1}^{n-1}, \hdots, u_{1,l_1, M_{y,1}^{n-1}-1}^{n-1}]^T,\\
-        % \u_{2,l_2}^{n-1} &:= [u_{2,l_2, 1}^{n-1},\hdots, u^{n-1}_{2,l_2, M_{y, 1}^{n-1}-1}]^T,
+        \u_{2,l_2}^n &:= [u_{2,l_2, 1}^n,\hdots, u^n_{2,l_2, M_{y, 1}^{n-1}-1}]^T,
     \end{aligned}\quad \text{if } N_y^n < N_y^{n-1}.
 \end{equation}
-% \subsubsection{State correction}
-% Like in the 1D case presented in Sec. \ref{sec:stateCorrection}, an artificial spring force can be added to the inner boundaries to prevent audible artefacts when removing grid points. If the state correction is applied to all grid points along the inner boundaries except for those at the intersection of the horizontal and vertical inner boundaries, (i.e., $u_{1, M_{x,1}^n, M_{y,1}^n}^n$, $u_{2, 0, M_{y,2}^n}^n$,$u_{3, M_{x,3}^n, 0}^n$ and $u_{4, 0, 0}^n$) the system can still be solved explicitly.
 
 \subsection{2D Wave Equation}
 The PDE of the 2D wave equation is defined as
@@ -610,10 +510,6 @@ Using same-sized identity matrix $\I = \I_{(N_x-1)(N_y-1)}$, one can use the gen
     \A = \I, \quad \B = 2\I + \lambda^2 \DDeltamat, \qaq \C = -\I,
 \end{equation}
 where, as in the 1D case, $\lambda = c k /h$.
-% and the stacked state vector in Eq. \eqref{eq:stackedQ}, the scheme in Eq. \eqref{eq:2DWaveFDS} can then be rewritten in matrix form as
-% \begin{equation}
-%     \qq^{n+1} = (2\I + \lambda^2\DDeltamat)\qq^n - \qq^{n-1}.
-% \end{equation}
 
 To apply the dynamic grid to the 2D wave equation, one can use the general matrix form in Eq. \eqref{eq:generalDynGridMatrix} with state vector $\uStack^n$ from Eq. \eqref{eq:stacked2D} and
 \begin{equation}\label{eq:2DwaveDynMatrix}
@@ -622,9 +518,6 @@ To apply the dynamic grid to the 2D wave equation, one can use the general matri
 % \end{gathered}
 \end{equation}
 Here,
-% \begin{equation}\label{eq:2DwaveDynMatrix}
-%     \uStack^{n+1} = \left(2\I_\MtwoD + (\lambda^n)^2\DDdelta\right)\uStack^n -\uStack^{n-1}
-% \end{equation}
 $\MtwoD \times \MtwoD$ matrix
 \begin{equation}\label{eq:dynamicKronecker}
     \DDDelta = \DDyy \oplus \DDxx,
@@ -649,9 +542,6 @@ Using state vector $\q^n$ from Eq. \eqref{eq:stackedQ}, Eq. \eqref{eq:thinPlateF
     \text{and} \quad\C = -(1-\sigma_0k)\I - \frac{2\sigma_1k}{h^2}\DDeltamat.
     \end{gathered}
 \end{equation}
-% \begin{equation}
-%     \q^{n+1} = \left(2\I - \mu^2 \DDeltaDelta\right)\q^n - \q^{n-1}
-% \end{equation}
 Here, $\I = \I_{(N_x-1)(N_y-1)}$, and for simply supported boundary conditions, same-sized matrix
 \begin{equation}\label{eq:DDeltaDelta}
     \DDeltaDelta = \DDeltamat\DDeltamat,
@@ -666,9 +556,6 @@ Similar to before, the dynamic grid can be applied to this system by replacing t
     \CC &= -(1-\sigma_0^nk)\I_\MtwoD - \frac{2\sigma_1^nk}{(h^n)^2}\DDDelta.
     \end{aligned}
 \end{equation}
-% \begin{equation}\label{eq:thinPlateDynMatrix}
-%     \uStack^{n+1} = \left(2\I_\MtwoD - (\mu^n)^2 \DDDeltaDelta\right)\uStack^n - \uStack^{n-1},
-% \end{equation}
 where $h^n = 2\sqrt{\kappa^n k}$, and for simply supported boundary conditions 
 \begin{equation}\label{eq:4thOrder2D}
     \DDDeltaDelta = \DDDelta\DDDelta,
@@ -676,15 +563,6 @@ where $h^n = 2\sqrt{\kappa^n k}$, and for simply supported boundary conditions
 which is of size $\MtwoD \times \MtwoD$. Sound examples can be found via \cite{soundExamples}. One example shows a change in $\kappa^n$ (and $\so^n$) modelling an increase in plate thickness, where another shows changes in $L_y^n$. 
 
 \section{RESULTS}\label{sec:analysis}
-% To evaluate the dynamic grid several analyses have been carried out... 
-% In this section, results of experiments with the various dynamic schemes are presented.
-% \subsection{Stability Analysis}
-% % Notes:
-
-% \SWcomment[I can numerically show that for all dynamic grid update equations (without damping) written in one-step form, the eigenvalues of matrix $\BB$ (see eq. \eqref{eq:modalAnalysis}) are located on the unit circle for all values of $\alpha^n$ (given that the stability condition is satisfied). However, I can't algebraically prove this. I do know that this shows stability, as well as the absence of damping effects of the dynamic grid method (right?). Should I mention this fact somewhere? Such as ``It can be shown that ... for all values of $\alpha^n$ ..." even though I did not actually do this]
-
-% \SWcomment[
-% What I do know is that the determinant of $\BB$ is 1, for any value of $\alpha^n$ (but I suppose that counts for all matrices in 1-step form). Either way, I hope that that helps to prove something...]
 
 \subsection{Modal Analysis}
 One can retrieve the modal frequencies of the implementation of the dynamic grid by performing a modal analysis of the update equation in matrix form. For reference, the general form is Eq. \eqref{eq:generalDynGridMatrix} with matrices of the various systems defined in Eqs. \eqref{eq:1DwaveDynMatrix}, \eqref{eq:stiffStringDynMatrix}, \eqref{eq:2DwaveDynMatrix} and \eqref{eq:thinPlateDynMatrix}. Assuming $\sigma_0^n = \sigma_1^n = 0$, (as the influence of losses on modal frequencies are very small for damped systems), and for sub-audio rate parameter variations, the $p$\th numerical modal frequency can be calculated as
@@ -694,48 +572,17 @@ One can retrieve the modal frequencies of the implementation of the dynamic grid
 where $\text{eig}_p(\cdot)$ denotes the ``$p$\th eigenvalue of."
 
 To determine the accuracy of the frequencies obtained in Eq. \eqref{eq:modalAnalysis}, one can compare against modal frequencies against expected values.
-% \SWcomment[not sure if I want to include the following, but just so you know how I did the analysis :) $\rightarrow$]
-% The expected modal frequencies of a FDTD scheme as a function of the wave number can be obtained by performing a von Neumann analysis on the discrete scheme. The wave number as a function of physical parameters can then be obtained through a combination of dispersion analysis and modal analysis of the continuous PDE. \SWcomment[$\leftarrow$]
-%
+% 
 Results of a modal analysis of the dynamic stiff string with $\kappa^n \approx 1.26$ m$^2$/s and linear changes in $c^n$ corresponding to $\Nfrac^n = 15 \rightarrow 20$ can be seen in Fig. \ref{fig:resultsStiffString}, as well as the expected modal frequencies. 
-%% other wording
-% One can analyse the continuous-time equations and the FD scheme to retrieve the modal frequencies as a function of physical parameters. These will be the expected modal frequencies.
 %
-% These can be compared modal frequencies exhibited by the eventual implementation by performing a modal analysis on the update equation in matrix form including the dynamic grid. 
-%
-% \begin{figure}[t]
-%     \centering
-%     \includegraphics[width=\columnwidth]{stiffStringModes.eps}
-%     \caption{Modal frequencies of the stiff string in Eq. \eqref{eq:stiffStringDynMatrix} with $\kappa \approx 1.26$ and (linear) changes in $c$ corresponding to $\Nfrac = 15 \rightarrow 20$. Modes exhibited by the system are shown in solid black, and expected modal frequencies are shown using dashed red lines.}
-%     \label{fig:resultsStiffString}
-% \end{figure}
 \begin{figure}[t]
     \centering
     \subfloat[]{\label{fig:resultsStiffString}{ \includegraphics[width=\figwidth\columnwidth]{stiffStringModesNarrow.eps}}}\\
     \vspace{-1em}\subfloat[]{\label{fig:outputStiffSTring}{ \includegraphics[width=\figwidth\columnwidth]{stiffStringOutput.eps}}}\\
     \vspace{-1em}\caption{The dynamic stiff string (Eq. \eqref{eq:generalDynGridMatrix} with Eq. \eqref{eq:stiffStringDynMatrix}) with $\kappa \approx 1.26$ and $c^n$ is (linearly) swept such that $\Nfrac^n = 15 \rightarrow 20$. (a) Results of Eq. \eqref{eq:modalAnalysis}. Modes exhibited by the system are shown in solid black, and expected modal frequencies are shown using dashed red lines. (b) Output of the dynamic stiff string excited at $n=0$ and $l=1$ and output retrieved at the same location ($\fs = 44.1$ kHz).}
 \end{figure}
-% One can retrieve the modal frequencies of a FD scheme by performing a modal analysis on its update equation in matrix form. These can be compared to the expected modal frequencies one can obtain from the continuous 
 %
-% \begin{table}[t]
-% \tabcolsep8.1pt
-% \caption{Tables should have a brief caption. Highlighting the best result(s) is helpful to readers.}
-% \label{table:an_example_table}
-% {%
-% \begin{tabular}{@{}lllc@{}}\toprule
-%  & \multicolumn{3}{c}{$\Nfrac$}\\\colrule
-%  Model & 15 - 16 & 20 - 21 & 50 - 51  \\\hline
-% 1D wave & -67.02 & -54.19 & -25.85 \\
-%         Bar & -96.00 & -77.38 & -36.71\botrule
-% \end{tabular}}
-% \begin{tabnote}
-% Note. This table contains several acronyms which should be defined in the paper, when they are first used (but not in the abstract).
-% \end{tabnote}
-% \end{table}
-%
-% In the following, the difference between the expected modal frequencies and those exhibited by the implementation will be expressed in cents.
-%
-The largeest frequency deviation for the dynamic stiff string with $N^n = 15$ is around $-67$ cents, whereas this decreases to around $-56$ cents for $N^n = 19$. This is similar to the results presented in \cite{Willemsen2021a}. Setting $c^n=0$ (effectively reducing the stiff string to an ideal bar \cite{Bilbao2009}), the maximum frequency deviation for $N^n=15$ is around -96 cents. 
+The largest frequency deviation for the dynamic stiff string with $N^n = 15$ is around $-67$ cents, whereas this decreases to around $-56$ cents for $N^n = 19$. This is similar to the results presented in \cite{Willemsen2021a}. Setting $c^n=0$ (effectively reducing the stiff string to an ideal bar \cite{Bilbao2009}), the maximum frequency deviation for $N^n=15$ is around -96 cents. 
 
 Results for the dynamic thin plate appear in Table \ref{tab:2dresults}. It can be shown that for a square 2D system, the maximum frequency deviations are identical to the case of the analogous 1D system. In other words, the 1D wave equation and the 2D wave equation share maximum frequency deviations for equal values of $N^n$ (1D) and $N_x^n$ and $N_y^n$ (2D). This also holds for the ideal bar and the thin plate. This indicates that frequency deviations do not worsen when applying the dynamic grid to higher dimensional systems.% \SWcomment[(using the Kronecker sum in Eq. \eqref{eq:dynamicKronecker})].
 
@@ -749,32 +596,6 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
     % \item The highest deviation amount for one value of $N^n$ happens for $\alpha^n \lesssim 0.25$.
 \end{itemize}
 \vspace{-1em}
-% \begin{table}[h]
-%     \centering
-%         \caption{Caption}
-
-%     \begin{tabular}{|c|c|c|c|c|}
-%         \hline & 15 - 16 & 20 - 21 & 50 - 51  \\\hline
-%         1D wave & -67.02 & -54.19 & -25.85 \\
-%         Bar & -96.00 & -77.38 & -36.71\\\hline
-%     \end{tabular}
-%     \label{tab:my_label}
-% \end{table}
-
-% \begin{table}[h]
-%     \centering\fontsize{8pt}{9pt}\selectfont
-%         \caption{Maximum frequency deviation for the dynamic thin plate (in cents), for different values of $\Nfrac_x$ and $\Nfrac_y$.}
-
-%     \begin{tabular}{|c|c|c|c|c|c|}
-%         \hline\backslashbox{$\Nfrac_x$}{$\Nfrac_y$} & 5-6 & 6-7 & 7-8 & 8-9 & 9-10 \\\hline
-%         5-6 & -194.59 & -185.20 & -177.73 & -171.70 & -166.76\\\hline
-%         6-7 & -185.20 &-175.69& -168.07 & -161.89 & -156.81\\\hline
-%         7-8 & -177.73 & -168.07 &  -160.32 & -154.00 & -148.79\\\hline
-%         8-9 & -171.70 & -161.89 & -154.00 & -147.56 & -142.24\\\hline
-%         9-10 & -166.76 & -156.81 & -148.79 & -142.24 &-136.80\\\hline
-%     \end{tabular}
-%     \label{tab:2dresults}
-% \end{table}
 
 \begin{table}[h]
     \centering\fontsize{8pt}{9pt}\selectfont
@@ -792,10 +613,9 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
 \end{table}
 \vspace{-1em}
 \subsection{System Behaviour}\label{sec:removingGridPoints}
-Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, as the inner boundaries act as one grid point due to the rigid connection at the time of excitation (see Eq. \eqref{eq:rigid}). Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. %If the system is excited at a later time, these modes will naturally be excited too.
-% Furthermore, no noticeable artefacts occur when adding grid points (at sub-audio rate parameter variations). 
+Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, as the inner boundaries act as one grid point due to the rigid connection at the time of excitation (see Eq. \eqref{eq:rigid}). Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. 
 
-If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, causing audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
+If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, causing audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. 
 The minimum value required for $\sigma_1^n$ to damp the highest mode depends on various factors, such as the values of other parameters and the speed of parameter variation.
 In the case of 2D systems, if parameters are varied such that grid points need to be removed, multiple grid points, and thus modes, `disappear' at once. Although these do not only include the highest frequency modes, damping does seem to take care of noticeable artefacts. 
 
@@ -811,7 +631,6 @@ Although a full proof of convergence for the dynamic grid is left for future wor
     \label{fig:convergence}
 \end{figure}
 
-% \SWcomment[One can also see it in time-space domain.] Consider the dynamic 1D wave equation in Eq. \eqref{eq:splitFDS} where $c$ -- and thus $h$ through Eq. \eqref{eq:gridLocations} -- is increased. The moment that a grid point is removed (according to Eq. \eqref{eq:removePoint}), and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. This fact also applies to the other (including 2D) systems presented in this paper. In \cite{Willemsen2021a}, we propose a method of \textit{displacement correction} that adds an artificial spring force to the inner boundaries, locally adding loss and successfully preventing (visible) artefacts. Although negligibly influencing the frequency content, this correction does introduce unnatural losses to the system. Frequency dependent damping decreases large differences between the inner boundaries...
 \vspace{-1.8em}
 
 \section{DISCUSSION}\label{sec:discussion}
