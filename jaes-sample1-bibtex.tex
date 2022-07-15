@@ -325,7 +325,9 @@ Removing grid points happens through simple deletion. If $c^n$ is increased such
     \v^{n-1} &:= [v_1^{n-1}, \hdots, v_{M_v^{n-1}-1}^{n-1}]^T,
     \end{aligned} \quad \text{if } N^n < N^{n-1}.
 \end{equation}
-It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. Notice that although a proof of convergence of this method is left for future work, numerical experiments in Sec. \ref{sec:convergence} demonstrate convergence of the proposed method. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
+It must be noted that for lossless systems, removing grid points could cause audible artefacts. This will be discussed in Sec. \ref{sec:removingGridPoints}. Furthermore, the limit on changing grid configurations is the addition / removal of one grid point per sample, but this limit needs to be much lower to retain the sub-audio rate assumption mentioned before. 
+
+Notice that although a proof of convergence of the proposed method is left for future work, numerical experiments in Sec. \ref{sec:convergence} demonstrate convergence. %In \cite{Willemsen2021b}, a lower limit of 20 samples per change is used together with $\lambda = 0.999$ and yields no noticeable artefacts.
 
 % \subsection{State Correction}\label{sec:stateCorrection}
 % At the moment that a point is removed, and thus $x_{v_{\Mv}}^n \approxeq x_{w_0}^n$, the states of the inner boundaries might not be approximately equal, i.e., $v_{\Mv}^n \not\approxeq w_0^n$. This violates the rigid connection in Eq. \eqref{eq:rigid} and -- in practice -- causes audible artefacts. To reduce this, a method of \textit{state correction}\footnote{\textit{displacement correction} in \cite{Willemsen2021a}.} is introduced and adds an artificial spring force between the inner boundaries:
@@ -675,7 +677,7 @@ which is of size $\MtwoD \times \MtwoD$. Sound examples can be found via \cite{s
 
 \section{RESULTS}\label{sec:analysis}
 % To evaluate the dynamic grid several analyses have been carried out... 
-In this section, results from the dynamic schemes are presented using a modal analysis, as well as the behaviour of the systems when excited.
+% In this section, results of experiments with the various dynamic schemes are presented.
 % \subsection{Stability Analysis}
 % % Notes:
 
@@ -790,7 +792,7 @@ In both the 1D and 2D cases, the system exhibits following behaviours:
 \end{table}
 \vspace{-1em}
 \subsection{System Behaviour}\label{sec:removingGridPoints}
-Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, which will be elaborated on in Sec. \ref{sec:discussion}. Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. %If the system is excited at a later time, these modes will naturally be excited too.
+Fig. \ref{fig:outputStiffSTring} shows the output of the dynamic stiff string (simulated at $\fs = 44.1$ kHz) with $\Nfrac^n = 15$ excited at $t=0$ s, after which $c^n$ is (linearly) swept such that $\Nfrac^n = 20$ at $t=10$ s. One can observe that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited, as the inner boundaries act as one grid point due to the rigid connection at the time of excitation (see Eq. \eqref{eq:rigid}). Furthermore, when a change in grid configuration occurs, the energy of modes follows the `path of least resistance' predicted in Fig. \ref{fig:resultsStiffString}. If modes of two grid configurations align, the energy transfer happens smoothly and no noticeable artefacts occur (under sub-audio rate parameter variations). This also means that every time a grid point, and thus a mode, is added at the top of the spectrum, it will not obtain any energy. %If the system is excited at a later time, these modes will naturally be excited too.
 % Furthermore, no noticeable artefacts occur when adding grid points (at sub-audio rate parameter variations). 
 
 If, on the other hand, $\Nfrac^n = 20\rightarrow 15$ (effectively horizontally flipping Fig. \ref{fig:resultsStiffString}), modes seem to `disappear' around the Nyquist frequency when grid points are removed. As there are no modes in the new grid configuration to receive energy, its energy is distributed over the remaining modes, causing audible artefacts. Informal experiments show that if modes are damped before they `disappear', noticeable artefacts are prevented. In the case of the stiff string, this is what frequency-dependent losses automatically allow for. %If parameters are changed such that grid points are removed, noticeable artefacts are prevented for a high enough value $\sigma_1$. 
@@ -803,7 +805,7 @@ For the lossless systems presented in this paper, local losses could be added at
 Although a full proof of convergence for the dynamic grid is left for future work, Figure \ref{fig:convergence} demonstrates converging behaviour. System \eqref{eq:splitFDS} is excited and the length is changed from $L = 1$ m to $L= 0.5$ m over the course of 0.1s (left panel), or vice versa (right panel) and ran at different sample rates. The reference signal is created by retrieving the output of running system \eqref{eq:splitFDS} at $\fs=30\cdot 44100$ Hz. Using a log-log plot to show the mean squared error (MSE), one can observe a quasi-linear decrease, indicating convergence with first-order accuracy in $k$. This result is confirmed by the fact that at higher sample rates, audible artefacts happen to a lesser degree.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\columnwidth]{mseLogLogPaper2.eps}
+    \includegraphics[width=\columnwidth]{mseLogLogPaper2.eps}
     \caption{MSE for system \eqref{eq:splitFDS} at different sample with a reference of $\fs = 30\cdot 44100$ Hz.
     }
     \label{fig:convergence}
@@ -813,7 +815,7 @@ Although a full proof of convergence for the dynamic grid is left for future wor
 \vspace{-1.8em}
 
 \section{DISCUSSION}\label{sec:discussion}
-\vspace{-0.4em}
+% \vspace{-0.4em}
 As shown in Sec. \ref{sec:analysis}, modal frequencies exhibited by the dynamic grid deviate from those expected. However, the largest frequency deviations occur at higher-frequency ranges, which are less perceptually relevant, and damped most quickly due to viscothermal effects. For the 1D systems presented in this paper, where a (quasi-)harmonic output is expected, these deviations could cause beating effects, though listening tests will have to confirm this.
 
 % The fact that the highest mode predicted by the analysis in Fig. \ref{fig:resultsStiffString} is not excited as shown in Fig. \ref{fig:outputStiffSTring} can be explained by the fact that if $\alpha^n = 0$, two grid points are perfectly overlapping and will act as one grid point due to the rigid connection in Eq. \eqref{eq:rigid}. 
@@ -839,14 +841,15 @@ This paper presents the dynamic grid, a method to smoothly change grid configura
 % Physical accuracy and stability conditions are not the main focus of this contribution, but rather the efficiency and applicability to existing models.
 
 Future directions include the extension of the method presented here to 3D, performing another Kronecker sum as in Eq. \eqref{eq:dynamicKronecker} for the 3\textsuperscript{rd} dimension (see \cite{Hamilton2016}). Other future considerations include listening tests to confirm the absence of audible artefacts, as well as real-time implementation and control, such that a player can `mold' their instrument while performing, potentially discovering new ways of expression. Finally, a full proof of convergence of the method needs to be established. 
-\vspace{-0.5em}
+\vspace{-0.3em}
 \section{ACKNOWLEDGMENTS}
+\vspace{-0.2em}
 This  work  has  been  funded  in  part  by  the European Art-Science-Technology Network for Digital Creativity (EASTN-DC), project number 883023 and the Nordic Sound and Music Computing Network by Nordforsk. This work is also funded in part by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme, Grant agreement No. 950084-StG-NEMUS. Thanks to the DAFx20in21 committee for providing the open access publication of this work.
-\vspace{-0.5em}
+\vspace{-0.9em}
 
 \bibliography{jaes.bib}
 \bibliographystyle{jaes.bst}
-
+\vspace{-3em}
 % \appendix
 % \section*{APPENDIX: KRONECKER SUM}\label{app:kronecker}
 % To obtain the matrix form of the discrete Laplacian in Eq. \eqref{eq:kroneckerSum} the Kronecker product and Kronecker sum need to be introduced. The Kronecker product between two matrices is \cite{Horn1991} 
@@ -863,11 +866,11 @@ This  work  has  been  funded  in  part  by  the European Art-Science-Technology
 % \end{equation}
 
 %Biography
- \biography{Silvin Willemsen}{JAESheadshotSilvin.jpg}{Silvin Willemsen is a Postdoctoral Researcher at Aalborg University in Copenhagen, Denmark. He received his MSc. in Sound and Music Computing from Aalborg University in 2017. In 2018, he was appointed as a PhD Stipend at the Department of Architecture, Design and Media Technology at Aalborg University Copenhagen and was affiliated with the Multisensory Experience Lab. In 2021 he received his PhD degree %entitled ``The Emulated Ensemble: Real-Time Simulation of Musical Instruments using Finite-Difference Time-Domain Methods'', 
+ \biography{Silvin Willemsen}{silvinSquare.jpeg}{Silvin Willemsen is a Postdoctoral Researcher at Aalborg University in Copenhagen, Denmark. He received his MSc. in Sound and Music Computing from Aalborg University in 2017. In 2018, he was appointed as a PhD Stipend at the Department of Architecture, Design and Media Technology at Aalborg University Copenhagen and was affiliated with the Multisensory Experience Lab. In 2021 he received his PhD degree %entitled ``The Emulated Ensemble: Real-Time Simulation of Musical Instruments using Finite-Difference Time-Domain Methods'', 
  and continues to work in the field of physical modelling for musical instruments.}
- \biography{Stefan Bilbao}{stefan.jpg}{Stefan Bilbao (B.A. Physics, Harvard, 1992, MSc., PhD Electrical Engineering, Stanford, 1996 and 2001 respectively) is currently Professor of Acoustics and Audio Signal Processing in the Acoustics and Audio Group at the University of Edinburgh, and previously held positions at the Sonic Arts Research Centre, at the Queen's University Belfast, and the Stanford Space Telecommunications and Radioscience Laboratory. He is an Associate Editor of the IEEE/ACM Transactions on Audio Speech and Language Processing. He was born in Montreal, Quebec, Canada. }
- \biography{Michele Ducceschi}{ducceschi.jpeg}{Michele Ducceschi (BSc. Physics (2008), University of Padova, Italy, MSc. Acoustics (2010), University of Edinburgh, UK, PhD Mechanical Engineering (2014), ENSTA and Ecole Polytechnique, France) is an Associate Professor at the University of Bologna in Italy. He is currently the P.I. of the ERC-funded project NEMUS (2021-2026). Previously, he held positions at the University of Edinburgh. He was a Royal Society Newton International Fellow, and a Leverhulme Early Career Fellow.}
- \biography{Stefania Serafin}{Stefania.jpg}{Stefania Serafin is Professor of Sonic interaction design at Aalborg University in Copenhagen and the leader of the Multisensory Experience Lab together with Rolf Nordahl.
+ \biography{Stefan Bilbao}{stefanSquare.jpg}{Stefan Bilbao (B.A. Physics, Harvard, 1992, MSc., PhD Electrical Engineering, Stanford, 1996 and 2001 respectively) is currently Professor of Acoustics and Audio Signal Processing in the Acoustics and Audio Group at the University of Edinburgh, and previously held positions at the Sonic Arts Research Centre, at the Queen's University Belfast, and the Stanford Space Telecommunications and Radioscience Laboratory. He is an Associate Editor of the IEEE/ACM Transactions on Audio Speech and Language Processing. He was born in Montreal, Quebec, Canada. }
+ \biography{Michele Ducceschi}{micheleSquare.jpeg}{Michele Ducceschi (BSc. Physics (2008), University of Padova, Italy, MSc. Acoustics (2010), University of Edinburgh, UK, PhD Mechanical Engineering (2014), ENSTA and Ecole Polytechnique, France) is an Associate Professor at the University of Bologna in Italy. He is currently the P.I. of the ERC-funded project NEMUS (2021-2026). Previously, he held positions at the University of Edinburgh. He was a Royal Society Newton International Fellow, and a Leverhulme Early Career Fellow.}
+ \biography{Stefania Serafin}{stefaniaSquare.jpeg}{Stefania Serafin is Professor of Sonic interaction design at Aalborg University in Copenhagen and the leader of the Multisensory Experience Lab together with Rolf Nordahl.
 She is the President of the Sound and Music Computing (SMC) association, Project Leader of the Nordic SMC network and lead of the SMC Master at Aalborg University.
 Stefania received her PhD % entitled “The sound of friction: computer models, playability and musical applications” 
 from Stanford University in 2004. %, supervised by Professor Julius Smith III.
